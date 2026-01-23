@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Admin {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+}
+
+model Client {
+  id           String        @id @default(uuid())
+  name         String
+  phone        String        @unique
+  createdAt    DateTime      @default(now())
+  appointments Appointment[]
+}
+
+model Appointment {
+  id            String   @id @default(uuid())
+  date          DateTime
+  status        String   @default("PENDING")
+  paymentMethod String?
+  
+  clientId      String
+  client        Client   @relation(fields: [clientId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

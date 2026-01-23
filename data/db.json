@@ -1,0 +1,62 @@
+{
+  "clients": [
+    {
+      "id": "332c9eab-5a1c-49ec-be46-e32284ae4712",
+      "name": "JSON Test",
+      "phone": "99999999",
+      "createdAt": "2025-12-18T04:29:17.970Z"
+    },
+    {
+      "id": "6302e024-fe4a-4671-b2ac-823c269d86b2",
+      "name": "Final JSON Test",
+      "phone": "88888888",
+      "createdAt": "2025-12-18T04:30:44.356Z"
+    },
+    {
+      "id": "8049a73c-99bf-441e-b539-febe51baa14b",
+      "name": "Nicolas France",
+      "phone": "3516002716",
+      "createdAt": "2025-12-18T04:37:16.440Z"
+    },
+    {
+      "id": "46e19911-9301-470b-9e1f-9d5f5380eeb4",
+      "name": "Prueba ws",
+      "phone": "3516002717",
+      "createdAt": "2025-12-18T06:16:35.155Z"
+    },
+    {
+      "id": "d16f5121-4a1a-4632-ac46-7e54325c7a32",
+      "name": "Test",
+      "phone": "3516002718",
+      "createdAt": "2025-12-18T06:22:49.788Z"
+    }
+  ],
+  "appointments": [
+    {
+      "id": "14b2cd05-00c7-4543-812f-ca3a71d09fa3",
+      "date": "2025-12-18T12:00:00.000Z",
+      "clientId": "8049a73c-99bf-441e-b539-febe51baa14b",
+      "status": "COMPLETED",
+      "createdAt": "2025-12-18T04:37:16.440Z",
+      "updatedAt": "2025-12-18T04:39:06.588Z",
+      "paymentMethod": "CASH"
+    },
+    {
+      "id": "9a0a1044-6cf2-4358-abc7-90bea49f9101",
+      "date": "2025-12-18T12:00:44.625Z",
+      "clientId": "332c9eab-5a1c-49ec-be46-e32284ae4712",
+      "status": "COMPLETED",
+      "createdAt": "2025-12-18T04:40:00.929Z",
+      "updatedAt": "2025-12-18T14:25:22.736Z",
+      "paymentMethod": "TRANSFER"
+    },
+    {
+      "id": "3a26adcc-62ee-4e69-8a56-16b893dc1292",
+      "date": "2025-12-18T14:00:00.000Z",
+      "clientId": "8049a73c-99bf-441e-b539-febe51baa14b",
+      "status": "PENDING",
+      "createdAt": "2025-12-18T14:23:41.867Z",
+      "updatedAt": "2025-12-18T14:23:41.867Z"
+    }
+  ]
+}
