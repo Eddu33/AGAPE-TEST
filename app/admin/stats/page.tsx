@@ -47,7 +47,7 @@ export default function StatsPage() {
                 <div className="flex items-center gap-2 ml-2">
                     <div className="overflow-hidden rounded-full border shadow-sm">
                         <Image
-                            src="/logo-salon.png"
+                            src="/logo-salon.png?v=1.2"
                             alt="Logo"
                             width={28}
                             height={28}
