@@ -40,7 +40,7 @@ export default function ConfirmationPage() {
     <main className="container mx-auto flex min-h-screen max-w-md flex-col items-center justify-center p-4">
       <div className="mb-6 overflow-hidden rounded-full border shadow-md">
         <Image
-          src="/logo.png"
+          src="/logo-salon.png"
           alt="Logo"
           width={80}
           height={80}

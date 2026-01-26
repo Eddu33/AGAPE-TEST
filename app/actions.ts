@@ -1,64 +1,56 @@
 "use server";
 
-import { getData, saveData } from "@/lib/db";
-import { v4 as uuidv4 } from "uuid";
-import { format, startOfDay, isSameDay } from "date-fns";
+import { prisma } from "@/lib/prisma";
+import { startOfDay, endOfDay } from "date-fns";
 
 export async function bookAppointment(data: { name: string; phone: string; date: Date }) {
     try {
-        const db = getData();
-
-        // Check if client exists
-        let client = db.clients.find((c: any) => c.phone === data.phone);
-
-        if (!client) {
-            client = {
-                id: uuidv4(),
+        // Find or create client
+        const client = await prisma.client.upsert({
+            where: { phone: data.phone },
+            update: { name: data.name },
+            create: {
                 name: data.name,
-                phone: data.phone,
-                createdAt: new Date().toISOString(),
-            };
-            db.clients.push(client);
-        }
+                phone: data.phone
+            }
+        });
 
         // Create appointment
-        const appointment = {
-            id: uuidv4(),
-            date: data.date.toISOString(),
-            clientId: client.id,
-            status: "PENDING",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-
-        db.appointments.push(appointment);
-        saveData(db);
+        const appointment = await prisma.appointment.create({
+            data: {
+                date: data.date,
+                clientId: client.id,
+                status: "PENDING"
+            }
+        });
 
         return { success: true, appointmentId: appointment.id };
     } catch (error) {
         console.error("Booking error:", error);
-        return { success: false, error: "Failed to book appointment" };
+        return { success: false, error: "Error al realizar la reserva" };
     }
 }
 
 export async function getAvailability(date: Date) {
-    console.log("Checking availability for:", date);
     try {
-        const db = getData();
-        const targetDate = startOfDay(new Date(date));
-        console.log("Target date:", targetDate);
-
-        const dayAppointments = db.appointments.filter((apt: any) => {
-            return isSameDay(new Date(apt.date), targetDate);
+        const targetDate = new Date(date);
+        const appointments = await prisma.appointment.findMany({
+            where: {
+                date: {
+                    gte: startOfDay(targetDate),
+                    lte: endOfDay(targetDate)
+                },
+                status: {
+                    not: "CANCELLED"
+                }
+            }
         });
-        console.log("Found appointments:", dayAppointments.length);
 
         const availability: Record<string, number> = {};
-        dayAppointments.forEach((apt: any) => {
-            const time = format(new Date(apt.date), "HH:mm");
+        appointments.forEach((apt) => {
+            const time = apt.date.toISOString().split('T')[1].substring(0, 5); // HH:mm
             availability[time] = (availability[time] || 0) + 1;
         });
-        console.log("Availability map:", availability);
 
         return availability;
     } catch (error) {
@@ -66,17 +58,14 @@ export async function getAvailability(date: Date) {
         return {};
     }
 }
+
 export async function getAppointmentById(id: string) {
     try {
-        const db = getData();
-        const appointment = db.appointments.find((a: any) => a.id === id);
-        if (!appointment) return null;
-
-        const client = db.clients.find((c: any) => c.id === appointment.clientId);
-        return {
-            ...appointment,
-            client
-        };
+        const appointment = await prisma.appointment.findUnique({
+            where: { id },
+            include: { client: true }
+        });
+        return appointment;
     } catch (error) {
         console.error("Error fetching appointment:", error);
         return null;

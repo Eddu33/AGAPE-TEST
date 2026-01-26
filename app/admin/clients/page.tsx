@@ -49,7 +49,7 @@ export default function ClientsPage() {
                 <div className="flex items-center gap-2 ml-2">
                     <div className="overflow-hidden rounded-full border shadow-sm">
                         <Image
-                            src="/logo.png"
+                            src="/logo-salon.png"
                             alt="Logo"
                             width={28}
                             height={28}

@@ -122,7 +122,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-2">
                     <div className="overflow-hidden rounded-full border shadow-sm">
                         <Image
-                            src="/logo.png"
+                            src="/logo-salon.png"
                             alt="Logo"
                             width={32}
                             height={32}

@@ -1,53 +1,68 @@
 "use server";
 
-import { getData, saveData } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function getAppointments() {
-    const db = getData();
-    return db.appointments.map((apt: any) => ({
-        ...apt,
-        client: db.clients.find((c: any) => c.id === apt.clientId)
-    })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    try {
+        return await prisma.appointment.findMany({
+            include: { client: true },
+            orderBy: { date: "asc" }
+        });
+    } catch (error) {
+        console.error("Error fetching appointments:", error);
+        return [];
+    }
 }
 
 export async function updateAppointmentStatus(id: string, status: string, paymentMethod?: string) {
-    const db = getData();
-    const index = db.appointments.findIndex((apt: any) => apt.id === id);
-    if (index !== -1) {
-        db.appointments[index].status = status;
-        db.appointments[index].paymentMethod = paymentMethod || null;
-        db.appointments[index].updatedAt = new Date().toISOString();
-        saveData(db);
+    try {
+        await prisma.appointment.update({
+            where: { id },
+            data: {
+                status,
+                paymentMethod: paymentMethod || null
+            }
+        });
+        revalidatePath("/admin/dashboard");
+    } catch (error) {
+        console.error("Error updating status:", error);
     }
-    revalidatePath("/admin/dashboard");
 }
 
 export async function deleteAppointment(id: string) {
-    const db = getData();
-    db.appointments = db.appointments.filter((apt: any) => apt.id !== id);
-    saveData(db);
-    revalidatePath("/admin/dashboard");
+    try {
+        await prisma.appointment.delete({
+            where: { id }
+        });
+        revalidatePath("/admin/dashboard");
+    } catch (error) {
+        console.error("Error deleting appointment:", error);
+    }
 }
 
 export async function getStats() {
-    const db = getData();
-    const appointments = db.appointments;
+    try {
+        const appointments = await prisma.appointment.findMany();
 
-    const total = appointments.length;
-    const completed = appointments.filter((a: any) => a.status === "COMPLETED").length;
-    const cancelled = appointments.filter((a: any) => a.status === "CANCELLED").length;
+        const total = appointments.length;
+        const completed = appointments.filter((a) => a.status === "COMPLETED").length;
+        const cancelled = appointments.filter((a) => a.status === "CANCELLED").length;
 
-    const cash = appointments.filter((a: any) => a.paymentMethod === "CASH").length;
-    const transfer = appointments.filter((a: any) => a.paymentMethod === "TRANSFER").length;
+        const cash = appointments.filter((a) => a.paymentMethod === "CASH").length;
+        const transfer = appointments.filter((a) => a.paymentMethod === "TRANSFER").length;
 
-    return {
-        total,
-        completed,
-        cancelled,
-        payments: {
-            cash,
-            transfer
-        }
-    };
+        return {
+            total,
+            completed,
+            cancelled,
+            payments: {
+                cash,
+                transfer
+            }
+        };
+    } catch (error) {
+        console.error("Error calculating stats:", error);
+        return { total: 0, completed: 0, cancelled: 0, payments: { cash: 0, transfer: 0 } };
+    }
 }

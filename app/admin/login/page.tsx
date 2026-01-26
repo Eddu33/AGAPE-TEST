@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
                 <CardHeader className="space-y-1 text-center">
                     <div className="mx-auto mb-4 overflow-hidden rounded-full shadow-md">
                         <Image
-                            src="/logo.png"
+                            src="/logo-salon.png"
                             alt="Logo"
                             width={80}
                             height={80}

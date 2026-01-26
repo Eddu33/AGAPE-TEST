@@ -83,7 +83,7 @@ export default function BookPage() {
       <div className="mb-6 flex flex-col items-center gap-4">
         <div className="overflow-hidden rounded-full border shadow-md">
           <Image
-            src="/logo.png"
+            src="/logo-salon.png"
             alt="Logo"
             width={80}
             height={80}

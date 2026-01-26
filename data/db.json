@@ -42,21 +42,13 @@
       "paymentMethod": "CASH"
     },
     {
-      "id": "9a0a1044-6cf2-4358-abc7-90bea49f9101",
-      "date": "2025-12-18T12:00:44.625Z",
-      "clientId": "332c9eab-5a1c-49ec-be46-e32284ae4712",
-      "status": "COMPLETED",
-      "createdAt": "2025-12-18T04:40:00.929Z",
-      "updatedAt": "2025-12-18T14:25:22.736Z",
-      "paymentMethod": "TRANSFER"
-    },
-    {
-      "id": "3a26adcc-62ee-4e69-8a56-16b893dc1292",
-      "date": "2025-12-18T14:00:00.000Z",
+      "id": "72437b19-7027-4255-914a-493910dc018f",
+      "date": "2026-01-26T12:00:00.000Z",
       "clientId": "8049a73c-99bf-441e-b539-febe51baa14b",
-      "status": "PENDING",
-      "createdAt": "2025-12-18T14:23:41.867Z",
-      "updatedAt": "2025-12-18T14:23:41.867Z"
+      "status": "COMPLETED",
+      "createdAt": "2026-01-26T03:32:57.928Z",
+      "updatedAt": "2026-01-26T04:00:56.741Z",
+      "paymentMethod": "TRANSFER"
     }
   ]
 }

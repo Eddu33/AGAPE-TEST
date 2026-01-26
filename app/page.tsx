@@ -9,7 +9,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 p-4 text-center">
       <div className="mb-8 overflow-hidden rounded-full shadow-lg">
         <Image
-          src="/logo.png"
+          src="/logo-salon.png"
           alt="Estilo & Corte Logo"
           width={120}
           height={120}
