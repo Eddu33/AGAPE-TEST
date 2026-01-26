@@ -25,9 +25,14 @@ export async function bookAppointment(data: { name: string; phone: string; date:
         });
 
         return { success: true, appointmentId: appointment.id };
-    } catch (error) {
-        console.error("Booking error:", error);
-        return { success: false, error: "Error al realizar la reserva" };
+    } catch (error: any) {
+        console.error("DETAILED Booking error:", error.message || error);
+        return {
+            success: false,
+            error: error.message?.includes("protocol")
+                ? "Error de configuracion de base de datos (Protocolo)"
+                : "Error al realizar la reserva"
+        };
     }
 }
 
