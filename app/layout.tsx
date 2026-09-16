@@ -1,23 +1,30 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Cinzel, Montserrat } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#F5F0E6",
+};
 
 export const metadata: Metadata = {
-  title: "Estilo & Corte - Q`Barbaridad",
-  description: "Sistema de gestión y reserva de turnos para Estilo & Corte",
-  icons: {
-    icon: "/logo-salon.png",
-  },
+  title: "ÁGAPE STUDIO | Manicuría & Cuidado de Uñas",
+  description: "La belleza nace del amor perfecto. Sistema de turnos y estética de uñas.",
 };
 
 export default function RootLayout({
@@ -26,9 +33,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${cinzel.variable} ${montserrat.variable} antialiased min-h-screen flex flex-col`}
       >
         {children}
       </body>

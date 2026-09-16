@@ -29,6 +29,20 @@
       "name": "Test",
       "phone": "3516002718",
       "createdAt": "2025-12-18T06:22:49.788Z"
+    },
+    {
+      "id": "89b097a3-b6b2-4c73-9c4a-fcb968741266",
+      "name": "Laza dir",
+      "phone": "3517718804",
+      "category": "Nueva",
+      "createdAt": "2026-09-15T20:44:00.185Z"
+    },
+    {
+      "id": "f5ec392f-52a6-4aae-8103-e844cee227ae",
+      "name": "Ana Martinez",
+      "phone": "03517718804",
+      "category": "Nueva",
+      "createdAt": "2026-09-15T20:57:14.463Z"
     }
   ],
   "appointments": [
@@ -49,6 +63,168 @@
       "createdAt": "2026-01-26T03:32:57.928Z",
       "updatedAt": "2026-01-26T04:00:56.741Z",
       "paymentMethod": "TRANSFER"
+    },
+    {
+      "id": "408d69ff-f6ea-4169-b510-2c231addb180",
+      "clientId": "89b097a3-b6b2-4c73-9c4a-fcb968741266",
+      "clientName": "Laza dir",
+      "clientPhone": "3517718804",
+      "serviceId": "soft-gel",
+      "serviceName": "Soft Gel Tips",
+      "extraIds": [
+        "reparacion-una"
+      ],
+      "extraNames": [
+        "Reparación de Uña Rota"
+      ],
+      "date": "2026-09-30",
+      "startTime": "14:00",
+      "endTime": "16:15",
+      "durationMinutes": 135,
+      "totalPrice": 20500,
+      "status": "CONFIRMED",
+      "notes": "Solo queria decir que una uña se me rompio a los 2 dias de habermelas hecho",
+      "createdAt": "2026-09-15T20:44:00.186Z",
+      "updatedAt": "2026-09-15T20:44:00.186Z"
+    },
+    {
+      "id": "6b21d475-2e03-42d2-8cd5-89e4b850f334",
+      "clientId": "f5ec392f-52a6-4aae-8103-e844cee227ae",
+      "clientName": "Ana Castellano",
+      "clientPhone": "03517718804",
+      "serviceId": "belleza-manos",
+      "serviceName": "Belleza de Manos Clásica",
+      "extraIds": [
+        "cristales"
+      ],
+      "extraNames": [
+        "Cristalería & Strass"
+      ],
+      "date": "2026-09-16",
+      "startTime": "12:00",
+      "endTime": "13:00",
+      "durationMinutes": 60,
+      "totalPrice": 11500,
+      "status": "CONFIRMED",
+      "notes": "",
+      "createdAt": "2026-09-15T20:57:14.464Z",
+      "updatedAt": "2026-09-15T20:57:14.464Z"
+    },
+    {
+      "id": "82f36a7d-5cd7-45da-a9e3-4c8dfe7cc812",
+      "clientId": "f5ec392f-52a6-4aae-8103-e844cee227ae",
+      "clientName": "Ana Martinez",
+      "clientPhone": "03517718804",
+      "serviceId": "kapping",
+      "serviceName": "Kapping Gel",
+      "extraIds": [],
+      "extraNames": [],
+      "date": "2026-09-17",
+      "startTime": "10:30",
+      "endTime": "12:00",
+      "durationMinutes": 90,
+      "totalPrice": 15000,
+      "status": "CONFIRMED",
+      "notes": "",
+      "createdAt": "2026-09-15T21:06:17.900Z",
+      "updatedAt": "2026-09-15T21:06:17.901Z"
     }
-  ]
+  ],
+  "blockedTimes": [
+    {
+      "id": "20ab441a-ae51-42ed-9b9e-7019864b4d35",
+      "date": "2026-09-17",
+      "startTime": "14:00",
+      "endTime": "18:30",
+      "reason": "Trabajo"
+    }
+  ],
+  "specialOpenings": [],
+  "weeklySchedule": [
+    {
+      "dayOfWeek": 0,
+      "nombreDia": "Domingo",
+      "isWorkingDay": false,
+      "hours": {
+        "open": "09:00",
+        "close": "19:00",
+        "hasBreak": false
+      }
+    },
+    {
+      "dayOfWeek": 1,
+      "nombreDia": "Lunes",
+      "isWorkingDay": false,
+      "hours": {
+        "open": "09:00",
+        "close": "19:00",
+        "hasBreak": false
+      }
+    },
+    {
+      "dayOfWeek": 2,
+      "nombreDia": "Martes",
+      "isWorkingDay": true,
+      "hours": {
+        "open": "09:00",
+        "close": "19:00",
+        "hasBreak": true,
+        "breakStart": "13:00",
+        "breakEnd": "14:00"
+      }
+    },
+    {
+      "dayOfWeek": 3,
+      "nombreDia": "Miércoles",
+      "isWorkingDay": true,
+      "hours": {
+        "open": "09:00",
+        "close": "19:00",
+        "hasBreak": true,
+        "breakStart": "13:00",
+        "breakEnd": "14:00"
+      }
+    },
+    {
+      "dayOfWeek": 4,
+      "nombreDia": "Jueves",
+      "isWorkingDay": true,
+      "hours": {
+        "open": "09:00",
+        "close": "19:00",
+        "hasBreak": true,
+        "breakStart": "13:00",
+        "breakEnd": "14:00"
+      }
+    },
+    {
+      "dayOfWeek": 5,
+      "nombreDia": "Viernes",
+      "isWorkingDay": true,
+      "hours": {
+        "open": "09:00",
+        "close": "19:00",
+        "hasBreak": true,
+        "breakStart": "13:00",
+        "breakEnd": "14:00"
+      }
+    },
+    {
+      "dayOfWeek": 6,
+      "nombreDia": "Sábado",
+      "isWorkingDay": true,
+      "hours": {
+        "open": "09:00",
+        "close": "18:00",
+        "hasBreak": true,
+        "breakStart": "13:00",
+        "breakEnd": "14:00"
+      }
+    }
+  ],
+  "settings": {
+    "studioName": "ÁGAPE STUDIO",
+    "whatsappPhone": "5493517718804",
+    "depositPolicy": "Tolerancia máxima de 15 minutos de espera."
+  }
 }
