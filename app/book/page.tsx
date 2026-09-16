@@ -16,7 +16,7 @@ import {
   formatDuration,
 } from "@/lib/services";
 import { SlotAvailability, formatDateKey, timeStringToMinutes } from "@/lib/availability";
-import { getCalculatedAvailability, bookAgapeAppointment } from "../actions";
+import { getCalculatedAvailability, bookAgapeAppointment, getPublicServices } from "../actions";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -43,6 +43,7 @@ function BookContent() {
     ? searchParams.get("extras")!.split(",")
     : [];
 
+  const [servicesList, setServicesList] = useState<Service[]>(SERVICIOS_AGAPE);
   const [selectedService, setSelectedService] = useState<Service>(() => {
     return (
       SERVICIOS_AGAPE.find((s) => s.id === initialServiceId) ||
@@ -50,6 +51,19 @@ function BookContent() {
     );
   });
   const [selectedExtraIds, setSelectedExtraIds] = useState<string[]>(initialExtraIds);
+
+  useEffect(() => {
+    getPublicServices().then((list) => {
+      if (list && list.length > 0) {
+        setServicesList(list as Service[]);
+        const paramId = searchParams.get("service");
+        const found = list.find((s) => s.id === paramId);
+        if (found) {
+          setSelectedService(found as Service);
+        }
+      }
+    });
+  }, [searchParams]);
 
   // 2. Estado de Fecha y Horario
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => {
@@ -229,29 +243,45 @@ function BookContent() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-              {SERVICIOS_AGAPE.map((service) => {
+              {servicesList.map((service) => {
                 const isSelected = selectedService.id === service.id;
                 return (
                   <div
                     key={service.id}
                     onClick={() => setSelectedService(service)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex gap-3.5 items-center ${
                       isSelected
                         ? "bg-[#2B2B2B] text-[#FFFFFF] border-[#D4AF37] shadow-sm"
                         : "bg-[#FFFFFF] text-[#2B2B2B] border-[#E5E5E5] hover:border-[#DCC5A3]"
                     }`}
                   >
-                    <div className="flex items-start justify-between">
-                      <span className="font-cinzel text-sm font-semibold">
-                        {service.nombre}
-                      </span>
-                      <span className="text-xs font-bold text-[#D4AF37]">
-                        {formatPrice(service.precio)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 text-[11px] mt-2 opacity-80">
-                      <Clock className="w-3 h-3" />
-                      <span>{service.duracion} minutos base</span>
+                    {service.imagenUrl && (
+                      <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-[#F5F0E6] border border-current/10">
+                        <img
+                          src={service.imagenUrl}
+                          alt={service.nombre}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div className="flex items-start justify-between gap-1">
+                        <span className="font-cinzel text-xs sm:text-sm font-semibold leading-tight">
+                          {service.nombre}
+                        </span>
+                        <span className="text-xs font-bold text-[#D4AF37] whitespace-nowrap">
+                          {formatPrice(service.precio)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px] mt-2 opacity-80">
+                        <span className="px-2 py-0.5 rounded-full bg-current/10 text-[9px] font-semibold">
+                          {service.categoria}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-[#D4AF37]" />
+                          {service.duracion} min
+                        </span>
+                      </div>
                     </div>
                   </div>
                 );

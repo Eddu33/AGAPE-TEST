@@ -6,6 +6,7 @@ export interface Service {
   duracion: number; // en minutos
   mantenimientoDias: number;
   descripcion: string;
+  imagenUrl?: string;
   queIncluye: string[];
   queNoIncluye: string[];
   garantia: string;
@@ -27,11 +28,12 @@ export const SERVICIOS_AGAPE: Service[] = [
   {
     id: "kapping",
     nombre: "Kapping Gel",
-    categoria: "Fortalecimiento & Estructura",
+    categoria: "Manicura",
     precio: 15000,
     duracion: 90,
     mantenimientoDias: 21,
     descripcion: "Capa protectora de gel nivelador aplicada sobre tu uña natural para darle grosor, resistencia y permitir un crecimiento sano sin roturas.",
+    imagenUrl: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80",
     queIncluye: [
       "Manicuría combinada / rusa detallada",
       "Limpieza y preparación profunda de cutículas",
@@ -52,11 +54,12 @@ export const SERVICIOS_AGAPE: Service[] = [
   {
     id: "semipermanente",
     nombre: "Esmaltado Semipermanente",
-    categoria: "Color & Brillo Duradero",
+    categoria: "Manicura",
     precio: 12000,
     duracion: 60,
     mantenimientoDias: 18,
     descripcion: "Tratamiento de belleza enfocado en cutículas prolijas y esmaltado de alta adherencia con curado en lámpara LED/UV por hasta 3 semanas.",
+    imagenUrl: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
     queIncluye: [
       "Repujado y remoción estética de cutículas",
       "Limado anatómico según la forma deseada",
@@ -74,13 +77,14 @@ export const SERVICIOS_AGAPE: Service[] = [
     destacado: false,
   },
   {
-    id: "soft-gel",
+    id: "softgel",
     nombre: "Soft Gel Tips",
-    categoria: "Extensiones Completas",
+    categoria: "Manicura",
     precio: 19000,
     duracion: 120,
     mantenimientoDias: 21,
     descripcion: "Técnica avanzada de extensiones mediante tips de gel preformados que cubren toda la uña. Son flexibles, livianos y no dañan la matriz ungueal.",
+    imagenUrl: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80",
     queIncluye: [
       "Preparación completa con fresas diamantadas",
       "Selección y ajuste personalizado del tamaño de tips",
@@ -99,11 +103,12 @@ export const SERVICIOS_AGAPE: Service[] = [
   {
     id: "belleza-manos",
     nombre: "Belleza de Manos Clásica",
-    categoria: "Cuidado Natural & Spa",
+    categoria: "Manicura",
     precio: 9000,
     duracion: 45,
     mantenimientoDias: 14,
     descripcion: "Ritual de spa y cuidado natural para manos impecables, cutículas hidratadas y uñas prolijas sin uso de lámpara UV.",
+    imagenUrl: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
     queIncluye: [
       "Exfoliación suave con aroma floral",
       "Limpieza y acondicionamiento de cutículas",
@@ -117,6 +122,46 @@ export const SERVICIOS_AGAPE: Service[] = [
     ],
     garantia: "Servicio de cuidado inmediato.",
     instrucciones: "Excelente opción para descansar del gel o mantener tus manos suaves y elegantes.",
+    activo: true,
+    destacado: false,
+  },
+  {
+    id: "perfilado-cejas",
+    nombre: "Perfilado & Diseño de Cejas",
+    categoria: "Cejas",
+    precio: 7500,
+    duracion: 40,
+    mantenimientoDias: 20,
+    descripcion: "Diseño personalizado según tu fisonomía facial con pinza y cera de baja temperatura para resaltar tu mirada de forma armoniosa.",
+    imagenUrl: "https://images.unsplash.com/photo-1595475207225-428b62bda831?auto=format&fit=crop&w=800&q=80",
+    queIncluye: [
+      "Visagismo facial y mapeo",
+      "Depilación con cera suave / pinza",
+      "Peinado y fijación con sérum",
+    ],
+    queNoIncluye: ["Laminado químico"],
+    garantia: "Asesoría estética garantizada.",
+    instrucciones: "Evitar exfoliar la zona 24 horas antes.",
+    activo: true,
+    destacado: false,
+  },
+  {
+    id: "lifting-pestanas",
+    nombre: "Lifting & Nutrición de Pestañas",
+    categoria: "Pestañas",
+    precio: 14000,
+    duracion: 75,
+    mantenimientoDias: 35,
+    descripcion: "Curvatura natural desde la raíz y tinte profundo con baño de keratina que abre tu mirada sin necesidad de extensiones.",
+    imagenUrl: "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=800&q=80",
+    queIncluye: [
+      "Lifting con moldes de silicona anatómicos",
+      "Tinte negro intenso",
+      "Baño nutritivo de keratina y colágeno",
+    ],
+    queNoIncluye: ["Extensiones pelo a pelo"],
+    garantia: "Efecto visible de 4 a 6 semanas.",
+    instrucciones: "Asistir sin rímel ni maquillaje en los ojos.",
     activo: true,
     destacado: false,
   },

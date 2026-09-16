@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -14,6 +14,7 @@ import {
   formatPrice,
   formatDuration,
 } from "@/lib/services";
+import { getPublicServices } from "../actions";
 import {
   Clock,
   Calendar,
@@ -28,8 +29,18 @@ import {
 } from "lucide-react";
 
 export default function ServiciosPage() {
+  const [services, setServices] = useState<Service[]>(SERVICIOS_AGAPE);
   const [selectedService, setSelectedService] = useState<Service>(SERVICIOS_AGAPE[0]);
   const [selectedExtraIds, setSelectedExtraIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    getPublicServices().then((list) => {
+      if (list && list.length > 0) {
+        setServices(list as Service[]);
+        setSelectedService(list[0] as Service);
+      }
+    });
+  }, []);
 
   // Extras actualmente seleccionados
   const selectedExtras = EXTRAS_AGAPE.filter((extra) =>
@@ -79,7 +90,7 @@ export default function ServiciosPage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-10">
-          {SERVICIOS_AGAPE.map((service) => {
+          {services.map((service) => {
             const isSelected = selectedService.id === service.id;
             return (
               <button
@@ -88,7 +99,7 @@ export default function ServiciosPage() {
                 className={`p-4 rounded-2xl text-left transition-all cursor-pointer flex flex-col justify-between border ${
                   isSelected
                     ? "bg-[#2B2B2B] text-[#FFFFFF] border-[#D4AF37] shadow-md scale-[1.02]"
-                    : "bg-[#FFFFFF] text-[#2B2B2B] border-[#DCC5A3]/40 hover:border-[#DCC5A3] hover:bg-[#F5F0E6]/30"
+                    : "bg-[#FFFFFF] text-[#2B2B2B] border-[#DCC5A3]/40 hover:border-[#D4AF37] hover:bg-[#F5F0E6]/30"
                 }`}
               >
                 <div>
@@ -129,6 +140,20 @@ export default function ServiciosPage() {
           {/* Ficha técnica y alcances */}
           <div className="lg:col-span-2 space-y-6">
             <div className="p-6 sm:p-8 rounded-3xl bg-[#FFFFFF] border border-[#DCC5A3]/40 shadow-xs">
+              {/* Foto modelo del estilo de uñas terminado */}
+              {selectedService.imagenUrl && (
+                <div className="relative w-full h-60 sm:h-72 rounded-2xl overflow-hidden mb-6 bg-[#F5F0E6] border border-[#DCC5A3]/40 shadow-xs">
+                  <img
+                    src={selectedService.imagenUrl}
+                    alt={selectedService.nombre}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#2B2B2B]/80 text-[#FFFFFF] backdrop-blur-xs text-[11px] font-semibold">
+                    {selectedService.categoria}
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                 <h2 className="font-cinzel text-2xl sm:text-3xl font-bold text-[#2B2B2B]">
                   {selectedService.nombre}

@@ -1,6 +1,17 @@
 "use server";
 
-import { getDatabase, saveDatabase, StoredAppointment, StoredClient } from "@/lib/db";
+import {
+  getDatabase,
+  saveDatabase,
+  StoredAppointment,
+  StoredClient,
+  DynamicService,
+  Expense,
+  Promotion,
+  Voucher,
+  MessageTemplate,
+  INITIAL_SERVICES,
+} from "@/lib/db";
 import { BlockedTime, formatDateKey, timeStringToMinutes } from "@/lib/availability";
 import { SERVICIOS_AGAPE, EXTRAS_AGAPE, calculateTotalDuration, calculateTotalPrice } from "@/lib/services";
 import { revalidatePath } from "next/cache";
@@ -91,6 +102,73 @@ export async function deleteAppointment(id: string) {
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Actualiza el estado de pago o seña de un turno
+ */
+export async function updateAppointmentPaymentStatus(
+  id: string,
+  paymentStatus: StoredAppointment["paymentStatus"],
+  paymentMethod?: StoredAppointment["paymentMethod"]
+) {
+  try {
+    const db = getDatabase();
+    const apt = db.appointments.find((a) => a.id === id);
+    if (apt) {
+      apt.paymentStatus = paymentStatus;
+      if (paymentMethod) apt.paymentMethod = paymentMethod;
+      apt.updatedAt = new Date().toISOString();
+      saveDatabase(db);
+      revalidatePath("/admin/dashboard");
+      revalidatePath("/admin/finances");
+      return { success: true };
+    }
+    return { success: false, error: "Turno no encontrado" };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Permite reagendar o modificar fecha/hora/estado de un turno
+ */
+export async function rescheduleAppointment(
+  id: string,
+  data: {
+    date: string;
+    startTime: string;
+    status?: StoredAppointment["status"];
+    paymentStatus?: StoredAppointment["paymentStatus"];
+    notes?: string;
+  }
+) {
+  try {
+    const db = getDatabase();
+    const apt = db.appointments.find((a) => a.id === id);
+    if (!apt) return { success: false, error: "Turno no encontrado" };
+
+    const startMinutes = timeStringToMinutes(data.startTime);
+    const endMinutes = startMinutes + (apt.durationMinutes || 60);
+    const hours = Math.floor(endMinutes / 60).toString().padStart(2, "0");
+    const minutes = (endMinutes % 60).toString().padStart(2, "0");
+
+    apt.date = data.date;
+    apt.startTime = data.startTime;
+    apt.endTime = `${hours}:${minutes}`;
+    if (data.status) apt.status = data.status;
+    if (data.paymentStatus) apt.paymentStatus = data.paymentStatus;
+    if (data.notes !== undefined) apt.notes = data.notes;
+    apt.updatedAt = new Date().toISOString();
+
+    saveDatabase(db);
+    revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/finances");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 
 /**
  * Permite a la manicurista crear un turno manual desde el panel
@@ -272,3 +350,526 @@ export async function getAdminStats(): Promise<DashboardStats> {
  * Alias de compatibilidad para getAdminStats
  */
 export const getStats = getAdminStats;
+
+// ==========================================
+// 1. GESTIÓN DE SERVICIOS DINÁMICOS
+// ==========================================
+
+export async function getAdminServices(): Promise<DynamicService[]> {
+  try {
+    const db = getDatabase();
+    return db.services && db.services.length > 0 ? db.services : INITIAL_SERVICES;
+  } catch (error) {
+    console.error("Error al obtener servicios de administración:", error);
+    return INITIAL_SERVICES;
+  }
+}
+
+export async function saveAdminService(data: Partial<DynamicService>): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db = getDatabase();
+    db.services = db.services && db.services.length > 0 ? db.services : [...INITIAL_SERVICES];
+
+    if (data.id) {
+      // Editar existente
+      const index = db.services.findIndex((s) => s.id === data.id);
+      if (index !== -1) {
+        db.services[index] = {
+          ...db.services[index],
+          ...data,
+        } as DynamicService;
+      } else {
+        db.services.push({
+          id: data.id,
+          nombre: data.nombre || "Nuevo Servicio",
+          categoria: data.categoria || "Manicura",
+          precio: Number(data.precio) || 0,
+          duracion: Number(data.duracion) || 60,
+          mantenimientoDias: Number(data.mantenimientoDias) || 21,
+          descripcion: data.descripcion || "",
+          imagenUrl: data.imagenUrl || "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80",
+          queIncluye: data.queIncluye || [],
+          queNoIncluye: data.queNoIncluye || [],
+          garantia: data.garantia || "5 días de garantía.",
+          instrucciones: data.instrucciones || "Asistir con uñas limpias.",
+          activo: data.activo !== undefined ? data.activo : true,
+          destacado: data.destacado || false,
+        });
+      }
+    } else {
+      // Crear nuevo
+      const newService: DynamicService = {
+        id: randomUUID(),
+        nombre: data.nombre || "Nuevo Servicio",
+        categoria: data.categoria || "Manicura",
+        precio: Number(data.precio) || 0,
+        duracion: Number(data.duracion) || 60,
+        mantenimientoDias: Number(data.mantenimientoDias) || 21,
+        descripcion: data.descripcion || "",
+        imagenUrl: data.imagenUrl || "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80",
+        queIncluye: data.queIncluye || [],
+        queNoIncluye: data.queNoIncluye || [],
+        garantia: data.garantia || "5 días de garantía.",
+        instrucciones: data.instrucciones || "Asistir con uñas limpias.",
+        activo: data.activo !== undefined ? data.activo : true,
+        destacado: data.destacado || false,
+      };
+      db.services.push(newService);
+    }
+
+    saveDatabase(db);
+    revalidatePath("/admin/services");
+    revalidatePath("/servicios");
+    revalidatePath("/book");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error al guardar servicio:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteAdminService(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db = getDatabase();
+    if (!db.services) return { success: true };
+    db.services = db.services.filter((s) => s.id !== id);
+    saveDatabase(db);
+    revalidatePath("/admin/services");
+    revalidatePath("/servicios");
+    revalidatePath("/book");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function toggleServiceStatus(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db = getDatabase();
+    const service = (db.services || INITIAL_SERVICES).find((s) => s.id === id);
+    if (service) {
+      service.activo = !service.activo;
+      saveDatabase(db);
+      revalidatePath("/admin/services");
+      revalidatePath("/servicios");
+      return { success: true };
+    }
+    return { success: false, error: "Servicio no encontrado" };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// ==========================================
+// 2. FINANZAS: GASTOS, INGRESOS Y RESULTADO
+// ==========================================
+
+export async function getAdminExpenses(): Promise<Expense[]> {
+  try {
+    const db = getDatabase();
+    return (db.expenses || []).sort((a, b) => b.fecha.localeCompare(a.fecha));
+  } catch (error) {
+    console.error("Error al obtener gastos:", error);
+    return [];
+  }
+}
+
+export async function saveAdminExpense(data: Omit<Expense, "id" | "createdAt">): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db = getDatabase();
+    db.expenses = db.expenses || [];
+    const newExpense: Expense = {
+      id: randomUUID(),
+      fecha: data.fecha,
+      categoria: data.categoria,
+      descripcion: data.descripcion,
+      monto: Number(data.monto),
+      observaciones: data.observaciones,
+      createdAt: new Date().toISOString(),
+    };
+    db.expenses.push(newExpense);
+    saveDatabase(db);
+    revalidatePath("/admin/finances");
+    revalidatePath("/admin/stats");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteAdminExpense(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db = getDatabase();
+    db.expenses = (db.expenses || []).filter((e) => e.id !== id);
+    saveDatabase(db);
+    revalidatePath("/admin/finances");
+    revalidatePath("/admin/stats");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getFinancialSummary() {
+  try {
+    const db = getDatabase();
+    const todayStr = formatDateKey(new Date());
+    const currentMonth = todayStr.substring(0, 7); // "YYYY-MM"
+
+    // Calcular inicio de semana (lunes)
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const diffToMonday = (dayOfWeek + 6) % 7;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diffToMonday);
+    const mondayStr = formatDateKey(monday);
+
+    const completedApts = db.appointments.filter((a) => a.status === "COMPLETED");
+
+    const totalIncome = completedApts.reduce((sum, a) => sum + (a.totalPrice || 0), 0);
+    const todayIncome = completedApts.filter((a) => a.date === todayStr).reduce((sum, a) => sum + (a.totalPrice || 0), 0);
+    const weekIncome = completedApts.filter((a) => a.date >= mondayStr).reduce((sum, a) => sum + (a.totalPrice || 0), 0);
+    const monthIncome = completedApts.filter((a) => a.date.startsWith(currentMonth)).reduce((sum, a) => sum + (a.totalPrice || 0), 0);
+
+    const expenses = db.expenses || [];
+    const totalExpenses = expenses.reduce((sum, e) => sum + (e.monto || 0), 0);
+    const monthExpenses = expenses.filter((e) => e.fecha.startsWith(currentMonth)).reduce((sum, e) => sum + (e.monto || 0), 0);
+
+    const cashIncome = completedApts.filter((a) => a.paymentMethod === "EFECTIVO").reduce((sum, a) => sum + a.totalPrice, 0);
+    const transferIncome = completedApts.filter((a) => a.paymentMethod === "TRANSFERENCIA").reduce((sum, a) => sum + a.totalPrice, 0);
+
+    const netResult = totalIncome - totalExpenses;
+    const monthResult = monthIncome - monthExpenses;
+
+    return {
+      totalIncome,
+      todayIncome,
+      weekIncome,
+      monthIncome,
+      totalExpenses,
+      monthExpenses,
+      netResult,
+      monthResult,
+      cashIncome,
+      transferIncome,
+      appointmentsCount: completedApts.length,
+    };
+  } catch (error) {
+    console.error("Error calculando balance financiero:", error);
+    return {
+      totalIncome: 0,
+      todayIncome: 0,
+      weekIncome: 0,
+      monthIncome: 0,
+      totalExpenses: 0,
+      monthExpenses: 0,
+      netResult: 0,
+      monthResult: 0,
+      cashIncome: 0,
+      transferIncome: 0,
+      appointmentsCount: 0,
+    };
+  }
+}
+
+// ==========================================
+// 3. PAGOS, SEÑAS Y REPROGRAMACIÓN DE TURNOS
+// ==========================================
+
+export async function updateAppointmentPayment(
+  id: string,
+  paymentStatus: StoredAppointment["paymentStatus"],
+  paymentMethod?: StoredAppointment["paymentMethod"],
+  paymentReceipt?: string
+) {
+  try {
+    const db = getDatabase();
+    const apt = db.appointments.find((a) => a.id === id);
+    if (apt) {
+      apt.paymentStatus = paymentStatus;
+      if (paymentMethod) apt.paymentMethod = paymentMethod;
+      if (paymentReceipt !== undefined) apt.paymentReceipt = paymentReceipt;
+      apt.updatedAt = new Date().toISOString();
+      saveDatabase(db);
+      revalidatePath("/admin/dashboard");
+      revalidatePath("/admin/finances");
+      return { success: true };
+    }
+    return { success: false, error: "Turno no encontrado" };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function rescheduleAdminAppointment(
+  id: string,
+  newDate: string,
+  newStartTime: string
+) {
+  try {
+    const db = getDatabase();
+    const apt = db.appointments.find((a) => a.id === id);
+    if (!apt) return { success: false, error: "Turno no encontrado" };
+
+    const startMinutes = timeStringToMinutes(newStartTime);
+    const endMinutes = startMinutes + apt.durationMinutes;
+    const hours = Math.floor(endMinutes / 60).toString().padStart(2, "0");
+    const minutes = (endMinutes % 60).toString().padStart(2, "0");
+
+    apt.date = newDate;
+    apt.startTime = newStartTime;
+    apt.endTime = `${hours}:${minutes}`;
+    apt.updatedAt = new Date().toISOString();
+
+    saveDatabase(db);
+    revalidatePath("/admin/dashboard");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// ==========================================
+// 4. CLIENTAS, CUMPLEAÑOS Y CLIENTAS INACTIVAS
+// ==========================================
+
+export async function getAdminClientsEnhanced() {
+  try {
+    const db = getDatabase();
+    const today = new Date();
+    const todayStr = formatDateKey(today);
+
+    return db.clients.map((client) => {
+      const clientApts = db.appointments.filter(
+        (a) => a.clientId === client.id || a.clientPhone.trim() === client.phone.trim()
+      );
+
+      const completed = clientApts.filter((a) => a.status === "COMPLETED");
+      const lastApt = clientApts.sort((a, b) => b.date.localeCompare(a.date))[0];
+
+      let daysSinceLastVisit: number | undefined = undefined;
+      if (lastApt) {
+        const lastDate = new Date(lastApt.date);
+        const diffMs = today.getTime() - lastDate.getTime();
+        daysSinceLastVisit = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+      }
+
+      // Comprobar si cumple años pronto (en los próximos 15 días)
+      let isBirthdaySoon = false;
+      let birthdayDisplay = client.birthday || "";
+      if (client.birthday) {
+        // Puede ser YYYY-MM-DD o DD/MM
+        let bMonth = 0;
+        let bDay = 0;
+        if (client.birthday.includes("-")) {
+          const parts = client.birthday.split("-");
+          bMonth = parseInt(parts[1], 10) - 1;
+          bDay = parseInt(parts[2], 10);
+        } else if (client.birthday.includes("/")) {
+          const parts = client.birthday.split("/");
+          bDay = parseInt(parts[0], 10);
+          bMonth = parseInt(parts[1], 10) - 1;
+        }
+
+        if (bDay > 0) {
+          const bDateThisYear = new Date(today.getFullYear(), bMonth, bDay);
+          const diffDays = Math.ceil((bDateThisYear.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays >= 0 && diffDays <= 15) {
+            isBirthdaySoon = true;
+          }
+        }
+      }
+
+      return {
+        ...client,
+        appointmentsCount: clientApts.length,
+        completedCount: completed.length,
+        lastVisit: lastApt?.date,
+        lastService: lastApt?.serviceName,
+        daysSinceLastVisit,
+        isBirthdaySoon,
+      };
+    });
+  } catch (error) {
+    console.error("Error obteniendo clientas:", error);
+    return [];
+  }
+}
+
+export async function updateClientDetails(
+  id: string,
+  data: {
+    name?: string;
+    phone?: string;
+    birthday?: string;
+    category?: StoredClient["category"];
+    notes?: string;
+  }
+) {
+  try {
+    const db = getDatabase();
+    const client = db.clients.find((c) => c.id === id);
+    if (client) {
+      if (data.name) client.name = data.name.trim();
+      if (data.phone) client.phone = data.phone.trim();
+      if (data.birthday !== undefined) client.birthday = data.birthday.trim();
+      if (data.category) client.category = data.category;
+      if (data.notes !== undefined) client.notes = data.notes.trim();
+      saveDatabase(db);
+      revalidatePath("/admin/clients");
+      return { success: true };
+    }
+    return { success: false, error: "Clienta no encontrada" };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// ==========================================
+// 5. PROMOCIONES Y VOUCHERS DE REGALO
+// ==========================================
+
+export async function getAdminPromotions(): Promise<Promotion[]> {
+  try {
+    const db = getDatabase();
+    return db.promotions || [];
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function saveAdminPromotion(data: Partial<Promotion>): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db = getDatabase();
+    db.promotions = db.promotions || [];
+    if (data.id) {
+      const idx = db.promotions.findIndex((p) => p.id === data.id);
+      if (idx !== -1) {
+        db.promotions[idx] = { ...db.promotions[idx], ...data } as Promotion;
+      }
+    } else {
+      const newPromo: Promotion = {
+        id: randomUUID(),
+        nombre: data.nombre || "Promoción Especial",
+        descripcion: data.descripcion || "",
+        descuentoPorcentaje: data.descuentoPorcentaje,
+        precioPromo: Number(data.precioPromo) || 0,
+        fechaInicio: data.fechaInicio || formatDateKey(new Date()),
+        fechaFin: data.fechaFin || formatDateKey(new Date(Date.now() + 15 * 86400000)),
+        serviciosIds: data.serviciosIds || [],
+        activo: data.activo !== undefined ? data.activo : true,
+        createdAt: new Date().toISOString(),
+      };
+      db.promotions.push(newPromo);
+    }
+    saveDatabase(db);
+    revalidatePath("/admin/promotions");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteAdminPromotion(id: string) {
+  try {
+    const db = getDatabase();
+    db.promotions = (db.promotions || []).filter((p) => p.id !== id);
+    saveDatabase(db);
+    revalidatePath("/admin/promotions");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getAdminVouchers(): Promise<Voucher[]> {
+  try {
+    const db = getDatabase();
+    return (db.vouchers || []).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function createAdminVoucher(data: {
+  para: string;
+  de: string;
+  servicioONombre: string;
+  monto?: number;
+  vencimiento: string;
+}) {
+  try {
+    const db = getDatabase();
+    db.vouchers = db.vouchers || [];
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const codigo = `AGAPE-${randomSuffix}`;
+
+    const newVoucher: Voucher = {
+      id: randomUUID(),
+      codigo,
+      para: data.para.trim(),
+      de: data.de.trim(),
+      servicioONombre: data.servicioONombre.trim(),
+      monto: data.monto ? Number(data.monto) : undefined,
+      vencimiento: data.vencimiento,
+      estado: "DISPONIBLE",
+      createdAt: new Date().toISOString(),
+    };
+
+    db.vouchers.push(newVoucher);
+    saveDatabase(db);
+    revalidatePath("/admin/promotions");
+    return { success: true, voucher: newVoucher };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateVoucherStatus(id: string, estado: Voucher["estado"]) {
+  try {
+    const db = getDatabase();
+    const v = (db.vouchers || []).find((voucher) => voucher.id === id);
+    if (v) {
+      v.estado = estado;
+      saveDatabase(db);
+      revalidatePath("/admin/promotions");
+      return { success: true };
+    }
+    return { success: false, error: "Voucher no encontrado" };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// ==========================================
+// 6. PLANTILLAS DE MENSAJES DE WHATSAPP
+// ==========================================
+
+export async function getAdminTemplates(): Promise<MessageTemplate[]> {
+  try {
+    const db = getDatabase();
+    return db.templates || [];
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function saveAdminTemplate(id: string, texto: string) {
+  try {
+    const db = getDatabase();
+    db.templates = db.templates || [];
+    const t = db.templates.find((tpl) => tpl.id === id);
+    if (t) {
+      t.texto = texto;
+      saveDatabase(db);
+      revalidatePath("/admin/messages");
+      return { success: true };
+    }
+    return { success: false, error: "Plantilla no encontrada" };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+

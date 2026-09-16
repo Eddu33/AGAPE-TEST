@@ -85,10 +85,11 @@ export async function bookAgapeAppointment(data: {
   try {
     const db = getDatabase();
 
-    // 1. Buscar servicio principal
-    const service = SERVICIOS_AGAPE.find((s) => s.id === data.serviceId);
+    // 1. Buscar servicio principal (dinámico o fallback)
+    const allServices = db.services && db.services.length > 0 ? db.services : SERVICIOS_AGAPE;
+    const service = allServices.find((s) => s.id === data.serviceId);
     if (!service) {
-      return { success: false, error: "El servicio seleccionado no existe." };
+      return { success: false, error: "El servicio seleccionado no existe o no está activo." };
     }
 
     // 2. Buscar extras
@@ -252,6 +253,20 @@ export async function updateStudioSettings(data: { whatsappPhone: string }) {
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Obtiene los servicios activos de la base de datos para la vista del cliente
+ */
+export async function getPublicServices() {
+  try {
+    const db = getDatabase();
+    const services = db.services && db.services.length > 0 ? db.services : SERVICIOS_AGAPE;
+    return services.filter((s) => s.activo);
+  } catch (error) {
+    console.error("Error al obtener servicios públicos:", error);
+    return SERVICIOS_AGAPE.filter((s) => s.activo);
   }
 }
 

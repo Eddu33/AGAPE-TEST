@@ -9,6 +9,9 @@ import {
   ExternalLink,
   LogOut,
   Sparkles,
+  DollarSign,
+  Gift,
+  MessageSquare,
 } from "lucide-react";
 
 export default function AdminNavbar() {
@@ -21,8 +24,12 @@ export default function AdminNavbar() {
   };
 
   const navLinks = [
-    { href: "/admin/dashboard", label: "Agenda & Turnos", icon: CalendarDays },
+    { href: "/admin/dashboard", label: "Agenda", icon: CalendarDays },
+    { href: "/admin/services", label: "Servicios", icon: Sparkles },
+    { href: "/admin/finances", label: "Finanzas", icon: DollarSign },
     { href: "/admin/clients", label: "Clientas", icon: Users },
+    { href: "/admin/promotions", label: "Promos & Gift", icon: Gift },
+    { href: "/admin/messages", label: "Mensajes", icon: MessageSquare },
     { href: "/admin/stats", label: "Estadísticas", icon: BarChart3 },
   ];
 
@@ -30,11 +37,11 @@ export default function AdminNavbar() {
     <>
       {/* Header exclusivo para el Panel Administrativo */}
       <header className="sticky top-0 z-40 w-full bg-[#2B2B2B] text-[#FFFFFF] border-b border-[#444444] shadow-md">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           {/* Logo y título administrativo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <Link href="/admin/dashboard" className="flex flex-col">
-              <span className="font-cinzel text-lg sm:text-xl font-bold tracking-widest text-[#FFFFFF]">
+              <span className="font-cinzel text-lg font-bold tracking-widest text-[#FFFFFF]">
                 ÁGAPE STUDIO
               </span>
               <span className="text-[10px] uppercase tracking-wider text-[#D4AF37] font-semibold -mt-1">
@@ -44,7 +51,7 @@ export default function AdminNavbar() {
           </div>
 
           {/* Enlaces de escritorio del panel */}
-          <nav className="hidden sm:flex items-center gap-6 text-xs font-medium">
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 text-xs font-medium overflow-x-auto py-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
@@ -52,9 +59,9 @@ export default function AdminNavbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors whitespace-nowrap ${
                     isActive
-                      ? "bg-[#D4AF37] text-[#2B2B2B] font-bold"
+                      ? "bg-[#D4AF37] text-[#2B2B2B] font-bold shadow-sm"
                       : "text-[#DCC5A3] hover:text-[#FFFFFF] hover:bg-[#3D3D3D]"
                   }`}
                 >
@@ -66,15 +73,15 @@ export default function AdminNavbar() {
           </nav>
 
           {/* Botones de acción derecha */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/"
               target="_blank"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#3D3D3D] text-[#DCC5A3] text-xs hover:text-[#FFFFFF] hover:bg-[#4A4A4A] transition-colors"
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#3D3D3D] text-[#DCC5A3] text-xs hover:text-[#FFFFFF] hover:bg-[#4A4A4A] transition-colors"
               title="Ver el sitio como clienta"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span>Ver Sitio Clientas</span>
+              <span>Ver Web</span>
             </Link>
 
             <button
@@ -86,29 +93,30 @@ export default function AdminNavbar() {
             </button>
           </div>
         </div>
-      </header>
 
-      {/* Barra móvil inferior exclusiva del panel administrativo */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#2B2B2B] text-[#FFFFFF] border-t border-[#444444] shadow-lg pb-safe">
-        <div className="grid grid-cols-3 h-16 items-center px-4">
-          {navLinks.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
+        {/* Sub-barra horizontal con scroll táctil para tablets y móviles */}
+        <div className="lg:hidden border-t border-[#3D3D3D] bg-[#222222] px-3 py-2 overflow-x-auto no-scrollbar flex items-center gap-2">
+          {navLinks.map((link) => {
+            const Icon = link.icon;
+            const isActive = pathname === link.href;
             return (
               <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center justify-center py-1 transition-colors ${
-                  isActive ? "text-[#D4AF37] font-bold" : "text-[#A3A3A3] hover:text-[#FFFFFF]"
+                key={link.href}
+                href={link.href}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs whitespace-nowrap transition-colors ${
+                  isActive
+                    ? "bg-[#D4AF37] text-[#2B2B2B] font-bold"
+                    : "text-[#A3A3A3] hover:text-[#FFFFFF] bg-[#2E2E2E]"
                 }`}
               >
-                <Icon className="w-5 h-5 mb-0.5" />
-                <span className="text-[10px]">{item.label}</span>
+                <Icon className="w-3 h-3" />
+                <span>{link.label}</span>
               </Link>
             );
           })}
         </div>
-      </div>
+      </header>
     </>
   );
 }
+

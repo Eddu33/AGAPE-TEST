@@ -2,43 +2,15 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Sparkles, Calendar, Clock, ArrowRight, Check } from "lucide-react";
+import { getPublicServices } from "./actions";
+import { formatPrice, formatDuration } from "@/lib/services";
 
-export default function Home() {
-  const serviciosDestacados = [
-    {
-      id: "kapping",
-      nombre: "Kapping Gel",
-      categoria: "Fortalecimiento",
-      duracion: "90 min",
-      mantenimiento: "21 días",
-      descripcion: "Capa protectora de gel nivelador sobre tu uña natural para evitar quiebres y permitir un crecimiento sano y fuerte.",
-      incluye: ["Manicuría combinada / rusa", "Nivelación con gel", "Esmaltado liso o french"],
-      precioSugerido: "$15.000",
-      destacado: true,
-    },
-    {
-      id: "semi",
-      nombre: "Esmaltado Semipermanente",
-      categoria: "Color & Brillo",
-      duracion: "60 min",
-      mantenimiento: "15 a 20 días",
-      descripcion: "Cuidado delicado de cutículas, preparación sin dañar la lámina y esmaltado de alta duración con acabado brillante.",
-      incluye: ["Limpieza profunda de cutículas", "Base vitaminada", "Color a elección + Top Coat"],
-      precioSugerido: "$12.000",
-      destacado: false,
-    },
-    {
-      id: "softgel",
-      nombre: "Soft Gel Tips",
-      categoria: "Extensiones",
-      duracion: "120 min",
-      mantenimiento: "21 días",
-      descripcion: "Extensiones completas elaboradas con gel ultra resistente y flexible. Alargan tus uñas con apariencia natural y ligera.",
-      incluye: ["Preparación completa", "Colocación de tips de gel", "Limado a forma deseada", "Esmaltado"],
-      precioSugerido: "$19.000",
-      destacado: false,
-    },
-  ];
+export default async function Home() {
+  const allServices = await getPublicServices();
+  const serviciosDestacados =
+    allServices.filter((s) => s.destacado).length > 0
+      ? allServices.filter((s) => s.destacado)
+      : allServices.slice(0, 3);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FFFFFF]">
@@ -108,58 +80,80 @@ export default function Home() {
             {serviciosDestacados.map((servicio) => (
               <div
                 key={servicio.id}
-                className={`relative flex flex-col justify-between rounded-2xl p-6 bg-[#FFFFFF] border transition-all duration-300 ${
+                className={`group relative flex flex-col justify-between rounded-3xl p-6 bg-[#FFFFFF] border transition-all duration-300 ${
                   servicio.destacado
                     ? "border-[#D4AF37] shadow-md ring-1 ring-[#D4AF37]/20"
                     : "border-[#DCC5A3]/40 shadow-xs hover:border-[#DCC5A3]"
                 }`}
               >
                 {servicio.destacado && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#D4AF37] text-[#2B2B2B] text-[10px] font-bold tracking-wider uppercase shadow-xs">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#D4AF37] text-[#2B2B2B] text-[10px] font-bold tracking-wider uppercase shadow-xs z-10">
                     Más Elegido
                   </div>
                 )}
 
                 <div>
+                  {/* Imagen del estilo de uñas terminado */}
+                  {servicio.imagenUrl && (
+                    <div className="relative w-full h-44 rounded-2xl overflow-hidden mb-4 bg-[#F5F0E6] border border-[#DCC5A3]/30">
+                      <img
+                        src={servicio.imagenUrl}
+                        alt={servicio.nombre}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between text-xs text-[#8C7A5B] font-medium mb-2">
-                    <span>{servicio.categoria}</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      {servicio.duracion}
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#F5F0E6] text-[10px] font-semibold text-[#2B2B2B]">
+                      {servicio.categoria}
+                    </span>
+                    <span className="flex items-center gap-1 text-[#666666]">
+                      <Clock className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      {formatDuration(servicio.duracion)}
                     </span>
                   </div>
 
-                  <h3 className="font-cinzel text-xl font-bold text-[#2B2B2B] mb-2">
-                    {servicio.nombre}
-                  </h3>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="font-cinzel text-xl font-bold text-[#2B2B2B]">
+                      {servicio.nombre}
+                    </h3>
+                    <span className="font-cinzel text-base font-bold text-[#D4AF37] whitespace-nowrap">
+                      {formatPrice(servicio.precio)}
+                    </span>
+                  </div>
 
                   <p className="text-xs text-[#666666] font-light leading-relaxed mb-5">
                     {servicio.descripcion}
                   </p>
 
-                  <div className="border-t border-[#F5F0E6] pt-4 mb-6">
-                    <div className="text-[11px] font-semibold text-[#2B2B2B] uppercase tracking-wider mb-2">
-                      Qué incluye:
+                  {servicio.queIncluye && servicio.queIncluye.length > 0 && (
+                    <div className="border-t border-[#F5F0E6] pt-4 mb-6">
+                      <div className="text-[11px] font-semibold text-[#2B2B2B] uppercase tracking-wider mb-2">
+                        Qué incluye:
+                      </div>
+                      <ul className="space-y-1.5">
+                        {servicio.queIncluye.map((item, i) => (
+                          <li key={i} className="flex items-center gap-2 text-xs text-[#525252]">
+                            <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="space-y-1.5">
-                      {servicio.incluye.map((item, i) => (
-                        <li key={i} className="flex items-center gap-2 text-xs text-[#525252]">
-                          <Check className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  )}
                 </div>
 
                 <div className="border-t border-[#F5F0E6] pt-4 mt-auto">
                   <div className="flex items-baseline justify-between mb-4">
                     <span className="text-xs text-[#737373]">Mantenimiento:</span>
-                    <span className="text-xs font-medium text-[#2B2B2B]">{servicio.mantenimiento}</span>
+                    <span className="text-xs font-semibold text-[#2B2B2B]">
+                      {servicio.mantenimientoDias ? `${servicio.mantenimientoDias} días` : "A consultar"}
+                    </span>
                   </div>
 
                   <Link
-                    href="/book"
+                    href={`/book?service=${servicio.id}`}
                     className={`w-full inline-flex items-center justify-center py-2.5 px-4 rounded-xl text-xs font-semibold tracking-wide transition-colors ${
                       servicio.destacado
                         ? "bg-[#2B2B2B] text-[#FFFFFF] hover:bg-[#D4AF37] hover:text-[#2B2B2B]"
