@@ -15,7 +15,7 @@ import {
   formatPrice,
   formatDuration,
 } from "@/lib/services";
-import { SlotAvailability, formatDateKey } from "@/lib/availability";
+import { SlotAvailability, formatDateKey, timeStringToMinutes } from "@/lib/availability";
 import { getCalculatedAvailability, bookAgapeAppointment } from "../actions";
 import {
   Calendar as CalendarIcon,
@@ -154,6 +154,27 @@ function BookContent() {
       });
 
       if (res.success && res.appointmentId) {
+        if (typeof window !== "undefined") {
+          try {
+            const endMin = timeStringToMinutes(selectedSlot.time) + totalDuration;
+            const endH = Math.floor(endMin / 60).toString().padStart(2, "0");
+            const endM = (endMin % 60).toString().padStart(2, "0");
+            const aptBackup = {
+              id: res.appointmentId,
+              clientName: name.trim(),
+              clientPhone: phone.trim(),
+              serviceName: selectedService.nombre,
+              extraNames: EXTRAS_AGAPE.filter((e) => selectedExtraIds.includes(e.id)).map((e) => e.nombre),
+              date: dateKey,
+              startTime: selectedSlot.time,
+              endTime: `${endH}:${endM}`,
+              totalPrice,
+              durationMinutes: totalDuration,
+              status: "CONFIRMED",
+            };
+            sessionStorage.setItem(`agape_apt_${res.appointmentId}`, JSON.stringify(aptBackup));
+          } catch (_) {}
+        }
         router.push(`/book/confirmation?id=${res.appointmentId}`);
       } else {
         setErrorMessage(res.error || "No se pudo concretar la reserva.");

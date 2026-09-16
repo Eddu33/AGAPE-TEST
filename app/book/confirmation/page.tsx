@@ -31,6 +31,7 @@ function ConfirmationContent() {
   const [appointment, setAppointment] = useState<StoredAppointment | null>(null);
   const [studioPhone, setStudioPhone] = useState("5493516002716");
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     getStudioSettings().then((s) => {
@@ -39,7 +40,28 @@ function ConfirmationContent() {
 
     if (id) {
       getAgapeAppointmentById(id)
-        .then((data) => setAppointment(data))
+        .then((data) => {
+          if (data) {
+            setAppointment(data);
+          } else if (typeof window !== "undefined") {
+            const cached = sessionStorage.getItem(`agape_apt_${id}`);
+            if (cached) {
+              try {
+                setAppointment(JSON.parse(cached));
+              } catch (_) {}
+            }
+          }
+        })
+        .catch(() => {
+          if (typeof window !== "undefined") {
+            const cached = sessionStorage.getItem(`agape_apt_${id}`);
+            if (cached) {
+              try {
+                setAppointment(JSON.parse(cached));
+              } catch (_) {}
+            }
+          }
+        })
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
@@ -75,10 +97,19 @@ function ConfirmationContent() {
     );
   }
 
-  // Parsear fecha
-  const [year, month, day] = appointment.date.split("-").map(Number);
-  const aptDate = new Date(year, month - 1, day);
-  const formattedDate = format(aptDate, "EEEE d 'de' MMMM, yyyy", { locale: es });
+  // Parsear fecha de forma segura
+  let formattedDate = appointment.date;
+  try {
+    const parts = (appointment.date || "").split("-").map(Number);
+    if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+      const aptDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      if (!isNaN(aptDate.getTime())) {
+        formattedDate = format(aptDate, "EEEE d 'de' MMMM, yyyy", { locale: es });
+      }
+    }
+  } catch (err) {
+    console.warn("No se pudo formatear la fecha:", err);
+  }
 
   // Mensaje formal y elegante para WhatsApp (sin emojis complejos que se corrompan en la URL)
   const extrasText =
@@ -101,8 +132,6 @@ function ConfirmationContent() {
   ].join("\n");
 
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(rawMessage)}`;
-
-  const [copied, setCopied] = useState(false);
 
   const handleCopyMessage = () => {
     navigator.clipboard.writeText(rawMessage);
