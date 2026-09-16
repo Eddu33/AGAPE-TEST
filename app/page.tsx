@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Sparkles, Calendar, Clock, ShieldCheck, Heart, ArrowRight, Check } from "lucide-react";
+import { Sparkles, Calendar, Clock, ArrowRight, Check } from "lucide-react";
 
 export default function Home() {
   const serviciosDestacados = [
@@ -37,24 +37,6 @@ export default function Home() {
       incluye: ["Preparación completa", "Colocación de tips de gel", "Limado a forma deseada", "Esmaltado"],
       precioSugerido: "$19.000",
       destacado: false,
-    },
-  ];
-
-  const pilares = [
-    {
-      titulo: "Amor & Dedicación",
-      descripcion: "Cada set es realizado con paciencia, delicadeza y amor por el detalle.",
-      icon: Heart,
-    },
-    {
-      titulo: "Bioseguridad & Higiene",
-      descripcion: "Herramientas esterilizadas y protocolos rigurosos para cuidar la salud de tus uñas.",
-      icon: ShieldCheck,
-    },
-    {
-      titulo: "Excelencia en Productos",
-      descripcion: "Trabajamos con primeras marcas para garantizar máxima adherencia y durabilidad.",
-      icon: Sparkles,
     },
   ];
 
@@ -103,33 +85,6 @@ export default function Home() {
               <span>Ver Servicios & Precios</span>
               <ArrowRight className="w-4 h-4 text-[#737373]" />
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* VALORES Y PILARES */}
-      <section className="py-12 bg-[#FFFFFF] border-b border-[#F5F0E6]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {pilares.map((pilar, idx) => {
-              const Icon = pilar.icon;
-              return (
-                <div
-                  key={idx}
-                  className="flex flex-col items-center text-center p-6 rounded-2xl bg-[#F5F0E6]/30 border border-[#DCC5A3]/30 hover:border-[#D4AF37]/50 transition-colors"
-                >
-                  <div className="w-12 h-12 rounded-full bg-[#FFFFFF] border border-[#DCC5A3] flex items-center justify-center text-[#D4AF37] mb-4 shadow-2xs">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <h3 className="font-cinzel text-base font-semibold text-[#2B2B2B] mb-2">
-                    {pilar.titulo}
-                  </h3>
-                  <p className="text-xs text-[#666666] leading-relaxed font-light">
-                    {pilar.descripcion}
-                  </p>
-                </div>
-              );
-            })}
           </div>
         </div>
       </section>
