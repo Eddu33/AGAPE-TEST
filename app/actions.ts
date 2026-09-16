@@ -160,7 +160,7 @@ export async function bookAgapeAppointment(data: {
     return { success: true, appointmentId };
   } catch (error: any) {
     console.error("Error al registrar turno:", error);
-    return { success: false, error: "Ocurrió un error inesperado al procesar la reserva." };
+    return { success: false, error: error?.message || "Ocurrió un error inesperado al procesar la reserva." };
   }
 }
 
