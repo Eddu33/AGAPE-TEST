@@ -234,17 +234,18 @@ export async function getStudioSettings() {
     const db = await getDatabase();
     return db.settings || {
       studioName: "ÁGAPE STUDIO",
-      whatsappPhone: "5493516002716",
+      whatsappPhone: "5493515580382",
       depositPolicy: "Tolerancia máxima de 15 minutos de espera.",
     };
   } catch {
     return {
       studioName: "ÁGAPE STUDIO",
-      whatsappPhone: "5493516002716",
+      whatsappPhone: "5493515580382",
       depositPolicy: "Tolerancia máxima de 15 minutos de espera.",
     };
   }
 }
+
 
 export async function updateStudioSettings(data: { whatsappPhone: string }) {
   try {

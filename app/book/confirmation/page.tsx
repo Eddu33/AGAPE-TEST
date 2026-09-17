@@ -20,48 +20,35 @@ import {
   Home,
   Copy,
   Check,
-  Edit2,
 } from "lucide-react";
+
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-
-function formatWhatsAppPhone(phone: string): string {
-  let cleaned = (phone || "").replace(/\D/g, "");
-  // Si empieza con 0, quitarlo (ej 0351... -> 351...)
-  if (cleaned.startsWith("0")) {
-    cleaned = cleaned.substring(1);
-  }
-  // Si no tiene prefijo de país 54:
-  if (!cleaned.startsWith("54")) {
-    cleaned = "549" + cleaned;
-  } else if (cleaned.startsWith("54") && !cleaned.startsWith("549")) {
-    cleaned = "549" + cleaned.substring(2);
-  }
-  return cleaned;
-}
 
 function ConfirmationContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const [appointment, setAppointment] = useState<StoredAppointment | null>(null);
-  const [clientCustomPhone, setClientCustomPhone] = useState<string>("");
+  const [studioPhone, setStudioPhone] = useState("5493515580382");
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
+
   useEffect(() => {
+    getStudioSettings().then((s) => {
+      if (s?.whatsappPhone) setStudioPhone(s.whatsappPhone);
+    });
+
     if (id) {
       getAgapeAppointmentById(id)
         .then((data) => {
           if (data) {
             setAppointment(data);
-            setClientCustomPhone(data.clientPhone || "");
           } else if (typeof window !== "undefined") {
             const cached = sessionStorage.getItem(`agape_apt_${id}`);
             if (cached) {
               try {
-                const parsed = JSON.parse(cached);
-                setAppointment(parsed);
-                setClientCustomPhone(parsed.clientPhone || "");
+                setAppointment(JSON.parse(cached));
               } catch (_) {}
             }
           }
@@ -71,9 +58,7 @@ function ConfirmationContent() {
             const cached = sessionStorage.getItem(`agape_apt_${id}`);
             if (cached) {
               try {
-                const parsed = JSON.parse(cached);
-                setAppointment(parsed);
-                setClientCustomPhone(parsed.clientPhone || "");
+                setAppointment(JSON.parse(cached));
               } catch (_) {}
             }
           }
@@ -83,7 +68,6 @@ function ConfirmationContent() {
       setLoading(false);
     }
   }, [id]);
-
 
   if (loading) {
     return (
@@ -128,29 +112,28 @@ function ConfirmationContent() {
     console.warn("No se pudo formatear la fecha:", err);
   }
 
-  // Mensaje formal y elegante para WhatsApp dirigido a la clienta
+  // Mensaje formal y elegante para WhatsApp (sin emojis complejos que se corrompan en la URL)
   const extrasText =
     appointment.extraNames && appointment.extraNames.length > 0
       ? ` (Extras: ${appointment.extraNames.join(", ")})`
       : "";
 
-  const activeClientPhone = clientCustomPhone || appointment.clientPhone || "";
-  const cleanPhone = formatWhatsAppPhone(activeClientPhone);
+  const cleanPhone = (studioPhone || "5493515580382").replace(/\D/g, "");
+
 
   const rawMessage = [
-    `¡Hola ${appointment.clientName}! ✨`,
+    `Hola Ágape Studio, deseo confirmar mi reserva:`,
     ``,
-    `Te confirmamos tu reserva en *ÁGAPE STUDIO*:`,
-    `- Servicio: *${appointment.serviceName}*${extrasText}`,
-    `- Fecha: *${formattedDate}*`,
-    `- Horario: *${appointment.startTime} hs a ${appointment.endTime} hs*`,
-    `- Total: *${formatPrice(appointment.totalPrice)}*`,
+    `- Clienta: ${appointment.clientName}`,
+    `- Servicio: ${appointment.serviceName}${extrasText}`,
+    `- Fecha: ${formattedDate}`,
+    `- Horario: ${appointment.startTime} hs a ${appointment.endTime} hs`,
+    `- Total: ${formatPrice(appointment.totalPrice)}`,
     ``,
-    `Por favor, recordá avisar con 24 hs de anticipación ante cualquier cambio o imprevisto. ¡Te esperamos con mucho amor para consentirte! 💖💅`,
+    `Quedo a la espera de su confirmación. ¡Muchas gracias!`,
   ].join("\n");
 
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(rawMessage)}`;
-
 
   const handleCopyMessage = () => {
     navigator.clipboard.writeText(rawMessage);
@@ -280,30 +263,6 @@ function ConfirmationContent() {
         </pre>
       </div>
 
-      {/* Indicador de destino de WhatsApp */}
-      <div className="flex items-center justify-between text-xs text-[#737373] px-3 py-2.5 mb-3 bg-[#F5F0E6]/60 rounded-xl border border-[#DCC5A3]/40">
-        <span className="flex items-center gap-1.5 flex-wrap">
-          <span>Destinataria:</span>
-          <strong className="text-[#2B2B2B]">+{cleanPhone}</strong>
-          <span className="text-[#8C7A5B] font-medium">({appointment.clientName})</span>
-        </span>
-        <button
-          type="button"
-          onClick={() => {
-            const nuevo = prompt(
-              `Ingresa o modifica el número de WhatsApp de ${appointment.clientName} (ej: 3512345678):`,
-              activeClientPhone
-            );
-            if (nuevo && nuevo.trim()) {
-              setClientCustomPhone(nuevo.trim());
-            }
-          }}
-          className="text-[11px] text-[#D4AF37] font-semibold hover:underline flex items-center gap-1 cursor-pointer shrink-0 ml-2"
-        >
-          <Edit2 className="w-3 h-3" />
-          <span>Modificar número</span>
-        </button>
-      </div>
 
       {/* Botones de acción */}
       <div className="space-y-3">
@@ -311,12 +270,11 @@ function ConfirmationContent() {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full py-3.5 px-4 rounded-full bg-[#2B2B2B] text-[#FFFFFF] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#D4AF37] hover:text-[#2B2B2B] transition-all shadow-md cursor-pointer"
+          className="w-full py-3.5 px-4 rounded-full bg-[#2B2B2B] text-[#FFFFFF] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#D4AF37] hover:text-[#2B2B2B] transition-all shadow-md"
         >
           <MessageCircle className="w-4 h-4 text-[#25D366]" />
-          <span>Enviar Confirmación a la Clienta por WhatsApp</span>
+          <span>Enviar Confirmación por WhatsApp</span>
         </a>
-
 
         <Link
           href="/"

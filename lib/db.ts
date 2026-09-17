@@ -314,9 +314,10 @@ export const INITIAL_TEMPLATES: MessageTemplate[] = [
 
 const DEFAULT_SETTINGS: StudioSettings = {
   studioName: "ÁGAPE STUDIO",
-  whatsappPhone: "5493516002716",
+  whatsappPhone: "5493515580382",
   depositPolicy: "Tolerancia máxima de 15 minutos de espera. Para confirmar el turno se solicita una seña del 50%.",
 };
+
 
 import { neon } from "@neondatabase/serverless";
 
