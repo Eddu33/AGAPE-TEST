@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import AdminNavbar from "@/components/AdminNavbar";
@@ -28,33 +29,34 @@ import {
   Tag,
   AlertCircle,
   Search,
+  CheckCheck,
 } from "lucide-react";
 
-// Presets de imágenes de alta calidad para facilitar la selección rápida
+// Fotos de referencia profesionales con acabados reales para selección rápida
 const PRESET_IMAGES = [
   {
-    label: "Kapping / Gel Nivelador",
     url: "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80",
+    label: "Kapping Nivelación Natural & Nude",
   },
   {
-    label: "Semipermanente / Color",
     url: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
+    label: "Semipermanente Brillo Clásico & French",
   },
   {
-    label: "Soft Gel Tips / Esculpidas",
     url: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80",
+    label: "Soft Gel Tips Estilizadas & Largas",
   },
   {
-    label: "Belleza Natural / Spa",
     url: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
+    label: "Perfilado & Laminado de Cejas",
   },
   {
-    label: "Diseño & Perfilado de Cejas",
-    url: "https://images.unsplash.com/photo-1595475207225-428b62bda831?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    label: "Lifting & Pestañas",
     url: "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=800&q=80",
+    label: "Lifting & Nutrición de Pestañas",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=800&q=80",
+    label: "Nail Art Minimalista & Delicado",
   },
 ];
 
@@ -78,6 +80,13 @@ export default function AdminServicesPage() {
       router.push("/admin/login");
       return;
     }
+    // Cargar caché previo si existe
+    const cached = localStorage.getItem("agape_admin_services_cache");
+    if (cached) {
+      try {
+        setServices(JSON.parse(cached));
+      } catch (e) {}
+    }
     loadServices();
   }, [router]);
 
@@ -86,6 +95,7 @@ export default function AdminServicesPage() {
     try {
       const data = await getAdminServices();
       setServices(data);
+      localStorage.setItem("agape_admin_services_cache", JSON.stringify(data));
     } catch (err) {
       console.error(err);
     } finally {

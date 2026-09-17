@@ -7,7 +7,13 @@ import {
   TimeInterval,
   SlotAvailability,
 } from "@/lib/availability";
-import { getDatabase, saveDatabase, StoredAppointment, StoredClient } from "@/lib/db";
+import {
+  getDatabaseAsync as getDatabase,
+  saveDatabaseAsync as saveDatabase,
+  StoredAppointment,
+  StoredClient,
+} from "@/lib/db";
+
 import { SERVICIOS_AGAPE, EXTRAS_AGAPE } from "@/lib/services";
 import { randomUUID } from "crypto";
 
@@ -28,9 +34,10 @@ export async function getCalculatedAvailability(
     const [year, month, day] = dateString.split("-").map(Number);
     const targetDate = new Date(year, month - 1, day);
 
-    const db = getDatabase();
+    const db = await getDatabase();
 
     // 1. Filtrar turnos activos para esa fecha
+
     const dayAppointments = db.appointments.filter(
       (apt) => apt.date === dateString && apt.status !== "CANCELLED"
     );
@@ -83,7 +90,7 @@ export async function bookAgapeAppointment(data: {
   notes?: string;
 }): Promise<{ success: boolean; appointmentId?: string; error?: string }> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
 
     // 1. Buscar servicio principal (dinámico o fallback)
     const allServices = db.services && db.services.length > 0 ? db.services : SERVICIOS_AGAPE;
@@ -170,7 +177,7 @@ export async function bookAgapeAppointment(data: {
  */
 export async function getAgapeAppointmentById(id: string): Promise<StoredAppointment | null> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const appointment = db.appointments.find((a) => a.id === id);
     return appointment || null;
   } catch (error) {
@@ -224,7 +231,7 @@ export async function bookAppointment(data: {
 
 export async function getStudioSettings() {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     return db.settings || {
       studioName: "ÁGAPE STUDIO",
       whatsappPhone: "5493516002716",
@@ -241,7 +248,7 @@ export async function getStudioSettings() {
 
 export async function updateStudioSettings(data: { whatsappPhone: string }) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     db.settings = {
       ...(db.settings || {
         studioName: "ÁGAPE STUDIO",
@@ -249,7 +256,7 @@ export async function updateStudioSettings(data: { whatsappPhone: string }) {
       }),
       whatsappPhone: data.whatsappPhone.trim(),
     };
-    saveDatabase(db);
+    await saveDatabase(db);
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -261,7 +268,7 @@ export async function updateStudioSettings(data: { whatsappPhone: string }) {
  */
 export async function getPublicServices() {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const services = db.services && db.services.length > 0 ? db.services : SERVICIOS_AGAPE;
     return services.filter((s) => s.activo);
   } catch (error) {
@@ -269,5 +276,6 @@ export async function getPublicServices() {
     return SERVICIOS_AGAPE.filter((s) => s.activo);
   }
 }
+
 
 

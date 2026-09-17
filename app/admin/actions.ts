@@ -1,8 +1,8 @@
 "use server";
 
 import {
-  getDatabase,
-  saveDatabase,
+  getDatabaseAsync as getDatabase,
+  saveDatabaseAsync as saveDatabase,
   StoredAppointment,
   StoredClient,
   DynamicService,
@@ -41,7 +41,7 @@ export interface DashboardStats {
  */
 export async function getAdminAppointments(): Promise<StoredAppointment[]> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     return db.appointments.sort((a, b) => {
       const dateDiff = a.date.localeCompare(b.date);
       if (dateDiff !== 0) return dateDiff;
@@ -58,7 +58,7 @@ export async function getAdminAppointments(): Promise<StoredAppointment[]> {
  */
 export async function getAdminBlockedTimes(): Promise<BlockedTime[]> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     return db.blockedTimes || [];
   } catch (error) {
     console.error("Error al obtener bloqueos:", error);
@@ -71,12 +71,12 @@ export async function getAdminBlockedTimes(): Promise<BlockedTime[]> {
  */
 export async function updateAppointmentStatus(id: string, status: StoredAppointment["status"]) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const apt = db.appointments.find((a) => a.id === id);
     if (apt) {
       apt.status = status;
       apt.updatedAt = new Date().toISOString();
-      saveDatabase(db);
+      await saveDatabase(db);
       revalidatePath("/admin/dashboard");
       return { success: true };
     }
@@ -92,9 +92,9 @@ export async function updateAppointmentStatus(id: string, status: StoredAppointm
  */
 export async function deleteAppointment(id: string) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     db.appointments = db.appointments.filter((a) => a.id !== id);
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/dashboard");
     return { success: true };
   } catch (error: any) {
@@ -112,13 +112,13 @@ export async function updateAppointmentPaymentStatus(
   paymentMethod?: StoredAppointment["paymentMethod"]
 ) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const apt = db.appointments.find((a) => a.id === id);
     if (apt) {
       apt.paymentStatus = paymentStatus;
       if (paymentMethod) apt.paymentMethod = paymentMethod;
       apt.updatedAt = new Date().toISOString();
-      saveDatabase(db);
+      await saveDatabase(db);
       revalidatePath("/admin/dashboard");
       revalidatePath("/admin/finances");
       return { success: true };
@@ -143,7 +143,7 @@ export async function rescheduleAppointment(
   }
 ) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const apt = db.appointments.find((a) => a.id === id);
     if (!apt) return { success: false, error: "Turno no encontrado" };
 
@@ -160,7 +160,7 @@ export async function rescheduleAppointment(
     if (data.notes !== undefined) apt.notes = data.notes;
     apt.updatedAt = new Date().toISOString();
 
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/dashboard");
     revalidatePath("/admin/finances");
     return { success: true };
@@ -183,7 +183,7 @@ export async function createManualAppointment(data: {
   notes?: string;
 }) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const service = SERVICIOS_AGAPE.find((s) => s.id === data.serviceId) || SERVICIOS_AGAPE[0];
     const extras = EXTRAS_AGAPE.filter((e) => data.extraIds.includes(e.id));
 
@@ -229,7 +229,7 @@ export async function createManualAppointment(data: {
     };
 
     db.appointments.push(newApt);
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/dashboard");
     return { success: true, appointmentId: newApt.id };
   } catch (error: any) {
@@ -248,7 +248,7 @@ export async function addScheduleBlock(data: {
   reason: string;
 }) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const newBlock: BlockedTime = {
       id: randomUUID(),
       date: data.date,
@@ -257,7 +257,7 @@ export async function addScheduleBlock(data: {
       reason: data.reason || "Bloqueo personal",
     };
     db.blockedTimes.push(newBlock);
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/dashboard");
     return { success: true };
   } catch (error: any) {
@@ -271,9 +271,9 @@ export async function addScheduleBlock(data: {
  */
 export async function removeScheduleBlock(id: string) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     db.blockedTimes = db.blockedTimes.filter((b) => b.id !== id);
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/dashboard");
     return { success: true };
   } catch (error: any) {
@@ -287,7 +287,7 @@ export async function removeScheduleBlock(id: string) {
  */
 export async function getAdminStats(): Promise<DashboardStats> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const total = db.appointments.length;
     const confirmed = db.appointments.filter((a) => a.status === "CONFIRMED").length;
     const completed = db.appointments.filter((a) => a.status === "COMPLETED").length;
@@ -357,7 +357,7 @@ export const getStats = getAdminStats;
 
 export async function getAdminServices(): Promise<DynamicService[]> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     return db.services && db.services.length > 0 ? db.services : INITIAL_SERVICES;
   } catch (error) {
     console.error("Error al obtener servicios de administración:", error);
@@ -367,7 +367,7 @@ export async function getAdminServices(): Promise<DynamicService[]> {
 
 export async function saveAdminService(data: Partial<DynamicService>): Promise<{ success: boolean; error?: string }> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     db.services = db.services && db.services.length > 0 ? db.services : [...INITIAL_SERVICES];
 
     if (data.id) {
@@ -417,7 +417,7 @@ export async function saveAdminService(data: Partial<DynamicService>): Promise<{
       db.services.push(newService);
     }
 
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/services");
     revalidatePath("/servicios");
     revalidatePath("/book");
@@ -431,10 +431,10 @@ export async function saveAdminService(data: Partial<DynamicService>): Promise<{
 
 export async function deleteAdminService(id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     if (!db.services) return { success: true };
     db.services = db.services.filter((s) => s.id !== id);
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/services");
     revalidatePath("/servicios");
     revalidatePath("/book");
@@ -447,11 +447,11 @@ export async function deleteAdminService(id: string): Promise<{ success: boolean
 
 export async function toggleServiceStatus(id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const service = (db.services || INITIAL_SERVICES).find((s) => s.id === id);
     if (service) {
       service.activo = !service.activo;
-      saveDatabase(db);
+      await saveDatabase(db);
       revalidatePath("/admin/services");
       revalidatePath("/servicios");
       return { success: true };
@@ -468,7 +468,7 @@ export async function toggleServiceStatus(id: string): Promise<{ success: boolea
 
 export async function getAdminExpenses(): Promise<Expense[]> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     return (db.expenses || []).sort((a, b) => b.fecha.localeCompare(a.fecha));
   } catch (error) {
     console.error("Error al obtener gastos:", error);
@@ -478,7 +478,7 @@ export async function getAdminExpenses(): Promise<Expense[]> {
 
 export async function saveAdminExpense(data: Omit<Expense, "id" | "createdAt">): Promise<{ success: boolean; error?: string }> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     db.expenses = db.expenses || [];
     const newExpense: Expense = {
       id: randomUUID(),
@@ -490,7 +490,7 @@ export async function saveAdminExpense(data: Omit<Expense, "id" | "createdAt">):
       createdAt: new Date().toISOString(),
     };
     db.expenses.push(newExpense);
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/finances");
     revalidatePath("/admin/stats");
     return { success: true };
@@ -501,9 +501,9 @@ export async function saveAdminExpense(data: Omit<Expense, "id" | "createdAt">):
 
 export async function deleteAdminExpense(id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     db.expenses = (db.expenses || []).filter((e) => e.id !== id);
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/finances");
     revalidatePath("/admin/stats");
     return { success: true };
@@ -514,7 +514,7 @@ export async function deleteAdminExpense(id: string): Promise<{ success: boolean
 
 export async function getFinancialSummary() {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const todayStr = formatDateKey(new Date());
     const currentMonth = todayStr.substring(0, 7); // "YYYY-MM"
 
@@ -585,14 +585,14 @@ export async function updateAppointmentPayment(
   paymentReceipt?: string
 ) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const apt = db.appointments.find((a) => a.id === id);
     if (apt) {
       apt.paymentStatus = paymentStatus;
       if (paymentMethod) apt.paymentMethod = paymentMethod;
       if (paymentReceipt !== undefined) apt.paymentReceipt = paymentReceipt;
       apt.updatedAt = new Date().toISOString();
-      saveDatabase(db);
+      await saveDatabase(db);
       revalidatePath("/admin/dashboard");
       revalidatePath("/admin/finances");
       return { success: true };
@@ -609,7 +609,7 @@ export async function rescheduleAdminAppointment(
   newStartTime: string
 ) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const apt = db.appointments.find((a) => a.id === id);
     if (!apt) return { success: false, error: "Turno no encontrado" };
 
@@ -623,7 +623,7 @@ export async function rescheduleAdminAppointment(
     apt.endTime = `${hours}:${minutes}`;
     apt.updatedAt = new Date().toISOString();
 
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/dashboard");
     return { success: true };
   } catch (error: any) {
@@ -637,7 +637,7 @@ export async function rescheduleAdminAppointment(
 
 export async function getAdminClientsEnhanced() {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const today = new Date();
     const todayStr = formatDateKey(today);
 
@@ -709,7 +709,7 @@ export async function updateClientDetails(
   }
 ) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const client = db.clients.find((c) => c.id === id);
     if (client) {
       if (data.name) client.name = data.name.trim();
@@ -717,7 +717,7 @@ export async function updateClientDetails(
       if (data.birthday !== undefined) client.birthday = data.birthday.trim();
       if (data.category) client.category = data.category;
       if (data.notes !== undefined) client.notes = data.notes.trim();
-      saveDatabase(db);
+      await saveDatabase(db);
       revalidatePath("/admin/clients");
       return { success: true };
     }
@@ -733,7 +733,7 @@ export async function updateClientDetails(
 
 export async function getAdminPromotions(): Promise<Promotion[]> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     return db.promotions || [];
   } catch (error) {
     return [];
@@ -742,7 +742,7 @@ export async function getAdminPromotions(): Promise<Promotion[]> {
 
 export async function saveAdminPromotion(data: Partial<Promotion>): Promise<{ success: boolean; error?: string }> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     db.promotions = db.promotions || [];
     if (data.id) {
       const idx = db.promotions.findIndex((p) => p.id === data.id);
@@ -764,7 +764,7 @@ export async function saveAdminPromotion(data: Partial<Promotion>): Promise<{ su
       };
       db.promotions.push(newPromo);
     }
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/promotions");
     return { success: true };
   } catch (error: any) {
@@ -774,9 +774,9 @@ export async function saveAdminPromotion(data: Partial<Promotion>): Promise<{ su
 
 export async function deleteAdminPromotion(id: string) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     db.promotions = (db.promotions || []).filter((p) => p.id !== id);
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/promotions");
     return { success: true };
   } catch (error: any) {
@@ -786,7 +786,7 @@ export async function deleteAdminPromotion(id: string) {
 
 export async function getAdminVouchers(): Promise<Voucher[]> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     return (db.vouchers || []).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   } catch (error) {
     return [];
@@ -801,7 +801,7 @@ export async function createAdminVoucher(data: {
   vencimiento: string;
 }) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     db.vouchers = db.vouchers || [];
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const codigo = `AGAPE-${randomSuffix}`;
@@ -819,7 +819,7 @@ export async function createAdminVoucher(data: {
     };
 
     db.vouchers.push(newVoucher);
-    saveDatabase(db);
+    await saveDatabase(db);
     revalidatePath("/admin/promotions");
     return { success: true, voucher: newVoucher };
   } catch (error: any) {
@@ -829,11 +829,11 @@ export async function createAdminVoucher(data: {
 
 export async function updateVoucherStatus(id: string, estado: Voucher["estado"]) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     const v = (db.vouchers || []).find((voucher) => voucher.id === id);
     if (v) {
       v.estado = estado;
-      saveDatabase(db);
+      await saveDatabase(db);
       revalidatePath("/admin/promotions");
       return { success: true };
     }
@@ -849,7 +849,7 @@ export async function updateVoucherStatus(id: string, estado: Voucher["estado"])
 
 export async function getAdminTemplates(): Promise<MessageTemplate[]> {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     return db.templates || [];
   } catch (error) {
     return [];
@@ -858,12 +858,12 @@ export async function getAdminTemplates(): Promise<MessageTemplate[]> {
 
 export async function saveAdminTemplate(id: string, texto: string) {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     db.templates = db.templates || [];
     const t = db.templates.find((tpl) => tpl.id === id);
     if (t) {
       t.texto = texto;
-      saveDatabase(db);
+      await saveDatabase(db);
       revalidatePath("/admin/messages");
       return { success: true };
     }

@@ -318,6 +318,8 @@ const DEFAULT_SETTINGS: StudioSettings = {
   depositPolicy: "Tolerancia máxima de 15 minutos de espera. Para confirmar el turno se solicita una seña del 50%.",
 };
 
+import { neon } from "@neondatabase/serverless";
+
 // En plataformas como Vercel o AWS Lambda, el sistema de archivos raíz (/var/task) es de solo lectura.
 // El único directorio con permisos de escritura es os.tmpdir() (/tmp).
 const IS_SERVERLESS = Boolean(
@@ -337,6 +339,17 @@ const SEED_PATH = path.join(process.cwd(), "data", "db.json");
 
 // Memoria en caliente para fallback y acceso ultra-rápido
 let memoryDb: AppDatabase | null = null;
+
+function getNeonSql() {
+  const dbUrl = process.env.DATABASE_URL || process.env.DIRECT_URL;
+  if (!dbUrl) return null;
+  try {
+    return neon(dbUrl);
+  } catch (err) {
+    console.warn("[ÁGAPE NEON] Error inicializando cliente Neon:", err);
+    return null;
+  }
+}
 
 function ensureDatabaseExists(): void {
   const dbPath = getDatabasePath();
@@ -376,7 +389,7 @@ function ensureDatabaseExists(): void {
           blockedTimes: parsedSeed.blockedTimes || [],
           specialOpenings: parsedSeed.specialOpenings || [],
           weeklySchedule: parsedSeed.weeklySchedule || DEFAULT_WEEKLY_SCHEDULE,
-          services: parsedSeed.services || INITIAL_SERVICES,
+          services: parsedSeed.services && parsedSeed.services.length > 0 ? parsedSeed.services : INITIAL_SERVICES,
           expenses: parsedSeed.expenses || [],
           promotions: parsedSeed.promotions || [],
           vouchers: parsedSeed.vouchers || [],
@@ -442,6 +455,40 @@ export const getDatabase = (): AppDatabase => {
   return memoryDb;
 };
 
+export async function getDatabaseAsync(): Promise<AppDatabase> {
+  const sql = getNeonSql();
+  if (sql) {
+    try {
+      const rows = await sql`SELECT data FROM agape_db WHERE id = 1`;
+      if (rows && rows.length > 0 && rows[0].data) {
+        const parsed = rows[0].data as AppDatabase;
+        memoryDb = {
+          clients: parsed.clients || [],
+          appointments: parsed.appointments || [],
+          blockedTimes: parsed.blockedTimes || [],
+          specialOpenings: parsed.specialOpenings || [],
+          weeklySchedule: parsed.weeklySchedule || DEFAULT_WEEKLY_SCHEDULE,
+          services: parsed.services && parsed.services.length > 0 ? parsed.services : INITIAL_SERVICES,
+          expenses: parsed.expenses || [],
+          promotions: parsed.promotions || [],
+          vouchers: parsed.vouchers || [],
+          templates: parsed.templates || INITIAL_TEMPLATES,
+          settings: parsed.settings || DEFAULT_SETTINGS,
+        };
+        // Guardar en caché de disco local
+        try {
+          const dbPath = getDatabasePath();
+          fs.writeFileSync(dbPath, JSON.stringify(memoryDb, null, 2), "utf-8");
+        } catch (e) {}
+        return memoryDb;
+      }
+    } catch (neonErr) {
+      console.warn("[ÁGAPE NEON] Error al consultar Neon en getDatabaseAsync:", neonErr);
+    }
+  }
+  return getDatabase();
+}
+
 export const saveDatabase = (data: AppDatabase): void => {
   // Asegurar que las colecciones no queden undefined
   data.services = data.services && data.services.length > 0 ? data.services : INITIAL_SERVICES;
@@ -458,4 +505,54 @@ export const saveDatabase = (data: AppDatabase): void => {
   } catch (error) {
     console.error("[ÁGAPE DB] Error al persistir en disco (mantenido en memoria):", error);
   }
+
+  // Sincronizar en segundo plano con Neon si está disponible
+  const sql = getNeonSql();
+  if (sql) {
+    sql`CREATE TABLE IF NOT EXISTS agape_db (
+      id INT PRIMARY KEY DEFAULT 1,
+      data JSONB NOT NULL,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );`
+      .then(() => {
+        return sql`INSERT INTO agape_db (id, data, updated_at)
+          VALUES (1, ${JSON.stringify(data)}, NOW())
+          ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW();`;
+      })
+      .catch((e) => console.warn("[ÁGAPE NEON BG] Error sincronizando:", e));
+  }
 };
+
+export async function saveDatabaseAsync(data: AppDatabase): Promise<void> {
+  data.services = data.services && data.services.length > 0 ? data.services : INITIAL_SERVICES;
+  data.expenses = data.expenses || [];
+  data.promotions = data.promotions || [];
+  data.vouchers = data.vouchers || [];
+  data.templates = data.templates || INITIAL_TEMPLATES;
+
+  memoryDb = data;
+  try {
+    ensureDatabaseExists();
+    const dbPath = getDatabasePath();
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), "utf-8");
+  } catch (error) {
+    console.error("[ÁGAPE DB] Error al persistir en disco (mantenido en memoria):", error);
+  }
+
+  const sql = getNeonSql();
+  if (sql) {
+    try {
+      await sql`CREATE TABLE IF NOT EXISTS agape_db (
+        id INT PRIMARY KEY DEFAULT 1,
+        data JSONB NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );`;
+      await sql`INSERT INTO agape_db (id, data, updated_at)
+        VALUES (1, ${JSON.stringify(data)}, NOW())
+        ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW();`;
+    } catch (neonErr) {
+      console.error("[ÁGAPE NEON] Error persistiendo en Neon PostgreSQL:", neonErr);
+    }
+  }
+}
+
