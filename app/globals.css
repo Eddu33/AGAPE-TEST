@@ -150,104 +150,33 @@
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-.dark button[class*="bg-[#D4AF37]"]:hover {
+.dark button[class*="bg-[#D4AF37]"]:hover,
+.dark a[class*="bg-[#D4AF37]"]:hover {
   background-color: #FFFFFF !important;
   color: #121212 !important;
 }
 
-/* Light Mode Global Adaptations */
-html:not(.dark) {
-  /* Fondos de página y superficies */
-  .bg-\[\#0D0D0D\],
-  .bg-\[\#0A0A0A\],
-  .bg-\[\#121212\],
-  .bg-\[\#121212\]\/90,
-  .bg-\[\#121212\]\/80 {
-    background-color: #FAF8F5 !important;
-  }
-
-  .bg-\[\#141414\],
-  .bg-\[\#161616\],
-  .bg-\[\#161616\]\/90,
-  .bg-\[\#161616\]\/85,
-  .bg-\[\#181818\],
-  .bg-\[\#181818\]\/90,
-  .bg-\[\#1A1A1A\],
-  .bg-\[\#1C1C1C\],
-  .bg-\[\#1E1E1E\],
-  .bg-\[\#222222\],
-  .bg-\[\#242424\],
-  .bg-\[\#282828\] {
-    background-color: #FFFFFF !important;
-  }
-
-  .bg-\[\#1C1813\]\/90 {
-    background-color: #FBF8F2 !important;
-  }
-
-  .bg-\[\#2A2A2A\],
-  .bg-\[\#333333\] {
-    background-color: #F3EFEA !important;
-  }
-
-  /* Textos */
-  .text-\[\#FFFFFF\],
-  .text-\[\#F5F5F5\],
-  .text-\[\#E0E0E0\] {
-    color: #171717 !important;
-  }
-
-  .text-\[\#D1D1D1\],
-  .text-\[\#CCCCCC\] {
-    color: #333333 !important;
-  }
-
-  .text-\[\#A3A3A3\],
-  .text-\[\#888888\] {
-    color: #63605A !important;
-  }
-
-  /* Bordes */
-  .border-\[\#262626\],
-  .border-\[\#262626\]\/80,
-  .border-\[\#2A2A2A\],
-  .border-\[\#2D2D2D\],
-  .border-\[\#333333\],
-  .border-\[\#3D3D3D\],
-  .border-\[\#444444\] {
-    border-color: #E2DBD0 !important;
-  }
-
-  /* Tablas en Light Mode */
-  th {
-    color: #A27B2C !important;
-    border-color: #E2DBD0 !important;
-    background-color: #F8F5EF !important;
-  }
-
-  td {
-    border-color: #EAE4DC !important;
-    color: #171717 !important;
-  }
-
-  tr:hover td {
-    background-color: #F7F3EB !important;
-  }
-
-  /* Inputs, selects y textareas */
-  input:not([type="checkbox"]):not([type="radio"]),
-  select,
-  textarea {
-    background-color: #FFFFFF !important;
-    color: #171717 !important;
-    border-color: #E2DBD0 !important;
-  }
-
-  /* Botones dorados en Light Mode */
-  button[class*="bg-[#D4AF37]"]:hover,
-  a[class*="bg-[#D4AF37]"]:hover {
-    background-color: #171717 !important;
-    color: #FFFFFF !important;
-  }
+/* Light Mode Defaults */
+html:not(.dark) th {
+  color: #A27B2C;
+  border-color: #E2DBD0;
+  background-color: #F8F5EF;
 }
+
+html:not(.dark) td {
+  border-color: #EAE4DC;
+  color: #171717;
+}
+
+html:not(.dark) tr:hover td {
+  background-color: #F7F3EB;
+}
+
+/* Botones dorados en Light Mode */
+html:not(.dark) button[class*="bg-[#D4AF37]"]:hover,
+html:not(.dark) a[class*="bg-[#D4AF37]"]:hover {
+  background-color: #171717 !important;
+  color: #FFFFFF !important;
+}
+
 

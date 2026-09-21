@@ -202,23 +202,23 @@ export default function AdminServicesPage() {
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 pb-24">
         {/* Cabecera */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#DCC5A3]/40 pb-6 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-black/10 dark:border-white/10 pb-6 mb-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F0E6] text-[10px] uppercase font-bold tracking-wider text-[#D4AF37] mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5F0E6] dark:bg-[#2A2415] text-[10px] uppercase font-bold tracking-wider text-[#B38E22] dark:text-[#D4AF37] mb-2">
               <Sparkles className="w-3.5 h-3.5" />
               Catálogo Dinámico & Precios
             </div>
-            <h1 className="font-cinzel text-2xl sm:text-3xl font-bold text-[#2B2B2B]">
+            <h1 className="font-cinzel text-2xl sm:text-3xl font-bold text-[#171717] dark:text-[#FFFFFF]">
               Gestión de Servicios
             </h1>
-            <p className="text-xs text-[#666666] font-light mt-1">
+            <p className="text-xs text-[#666666] dark:text-[#A0A0A0] font-light mt-1">
               Modifica precios, duraciones, fotos y descripciones. Cualquier cambio se actualiza inmediatamente en el sitio de las clientas.
             </p>
           </div>
 
           <button
             onClick={handleOpenNewModal}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#2B2B2B] text-[#FFFFFF] text-xs font-semibold hover:bg-[#D4AF37] hover:text-[#2B2B2B] transition-colors shadow-sm cursor-pointer self-start md:self-auto"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#181818] dark:bg-[#D4AF37] text-[#FFFFFF] dark:text-[#121212] text-xs font-semibold hover:bg-[#D4AF37] hover:text-[#181818] dark:hover:bg-white transition-colors shadow-sm cursor-pointer self-start md:self-auto"
           >
             <Plus className="w-4 h-4" />
             <span>Nuevo Servicio</span>
@@ -230,8 +230,8 @@ export default function AdminServicesPage() {
           <div
             className={`p-4 rounded-2xl text-xs font-medium mb-6 flex items-center gap-2 border ${
               message.type === "success"
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : "bg-red-50 text-red-800 border-red-200"
+                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+                : "bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800/60"
             }`}
           >
             {message.type === "success" ? (
@@ -253,8 +253,8 @@ export default function AdminServicesPage() {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
                   selectedCategory === cat
-                    ? "bg-[#2B2B2B] text-[#FFFFFF] shadow-xs"
-                    : "bg-[#FFFFFF] text-[#666666] border border-[#DCC5A3]/40 hover:border-[#D4AF37]"
+                    ? "bg-[#181818] dark:bg-[#D4AF37] text-[#FFFFFF] dark:text-[#121212] shadow-xs font-bold"
+                    : "bg-[#FFFFFF] dark:bg-[#1A1A1A] text-[#666666] dark:text-[#CCCCCC] border border-[#DDD8CF] dark:border-[#333333] hover:border-[#D4AF37]"
                 }`}
               >
                 {cat}
@@ -270,24 +270,24 @@ export default function AdminServicesPage() {
               placeholder="Buscar servicio..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-full text-xs bg-[#FFFFFF] border border-[#DCC5A3]/40 focus:outline-none focus:border-[#D4AF37]"
+              className="w-full pl-9 pr-3 py-1.5 rounded-full text-xs bg-[#FFFFFF] dark:bg-[#1A1A1A] text-[#171717] dark:text-white border border-[#DDD8CF] dark:border-[#333333] focus:outline-none focus:border-[#D4AF37]"
             />
           </div>
         </div>
 
         {/* Grilla de Servicios */}
         {loading ? (
-          <div className="p-16 text-center text-xs text-[#737373]">
+          <div className="p-16 text-center text-xs text-[#737373] dark:text-[#A0A0A0]">
             <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             Cargando servicios del catálogo...
           </div>
         ) : filteredServices.length === 0 ? (
-          <div className="p-12 text-center bg-[#FFFFFF] rounded-3xl border border-[#DCC5A3]/40">
+          <div className="p-12 text-center bg-[#FFFFFF] dark:bg-[#1A1A1A] rounded-3xl border border-[#DDD8CF] dark:border-[#333333]">
             <Tag className="w-8 h-8 text-[#DCC5A3] mx-auto mb-2" />
-            <h3 className="font-cinzel text-base font-bold text-[#2B2B2B]">
+            <h3 className="font-cinzel text-base font-bold text-[#171717] dark:text-[#FFFFFF]">
               No se encontraron servicios
             </h3>
-            <p className="text-xs text-[#737373] mt-1">
+            <p className="text-xs text-[#737373] dark:text-[#A0A0A0] mt-1">
               Prueba cambiando la categoría o crea un nuevo servicio con el botón superior.
             </p>
           </div>
@@ -296,15 +296,15 @@ export default function AdminServicesPage() {
             {filteredServices.map((service) => (
               <div
                 key={service.id}
-                className={`bg-[#FFFFFF] rounded-3xl border overflow-hidden transition-all flex flex-col justify-between ${
+                className={`bg-[#FFFFFF] dark:bg-[#1A1A1A] rounded-3xl border overflow-hidden transition-all flex flex-col justify-between ${
                   service.activo
-                    ? "border-[#DCC5A3]/50 shadow-xs hover:shadow-md hover:border-[#D4AF37]"
-                    : "border-gray-200 opacity-60 bg-gray-50"
+                    ? "border-[#DDD8CF] dark:border-[#2E2E2E] shadow-xs hover:shadow-md hover:border-[#D4AF37]"
+                    : "border-gray-200 dark:border-gray-800 opacity-60 bg-gray-50 dark:bg-gray-900/40"
                 }`}
               >
                 <div>
                   {/* Imagen del servicio */}
-                  <div className="relative w-full h-44 bg-[#F5F0E6] overflow-hidden">
+                  <div className="relative w-full h-44 bg-[#F5F0E6] dark:bg-[#242424] overflow-hidden">
                     {service.imagenUrl ? (
                       <img
                         src={service.imagenUrl}
@@ -320,11 +320,11 @@ export default function AdminServicesPage() {
 
                     {/* Badges superiores */}
                     <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                      <span className="px-2.5 py-0.5 rounded-full bg-[#2B2B2B]/80 text-[#FFFFFF] backdrop-blur-xs text-[10px] font-semibold">
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#181818]/80 text-[#FFFFFF] backdrop-blur-xs text-[10px] font-semibold">
                         {service.categoria || "Manicura"}
                       </span>
                       {service.destacado && (
-                        <span className="px-2 py-0.5 rounded-full bg-[#D4AF37] text-[#2B2B2B] text-[10px] font-bold uppercase tracking-wider">
+                        <span className="px-2 py-0.5 rounded-full bg-[#D4AF37] text-[#121212] text-[10px] font-bold uppercase tracking-wider">
                           Destacado
                         </span>
                       )}
@@ -352,25 +352,25 @@ export default function AdminServicesPage() {
                   {/* Contenido */}
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="font-cinzel text-lg font-bold text-[#2B2B2B]">
+                      <h3 className="font-cinzel text-lg font-bold text-[#171717] dark:text-[#FFFFFF]">
                         {service.nombre}
                       </h3>
-                      <span className="font-cinzel text-base font-bold text-[#D4AF37] whitespace-nowrap">
+                      <span className="font-cinzel text-base font-bold text-[#B38E22] dark:text-[#D4AF37] whitespace-nowrap">
                         {formatPrice(service.precio)}
                       </span>
                     </div>
 
-                    <p className="text-xs text-[#666666] font-light line-clamp-2 mb-4">
+                    <p className="text-xs text-[#666666] dark:text-[#A0A0A0] font-light line-clamp-2 mb-4">
                       {service.descripcion}
                     </p>
 
-                    <div className="grid grid-cols-2 gap-2 py-2.5 px-3 rounded-2xl bg-[#FAF8F5] border border-[#DCC5A3]/30 text-[11px] text-[#525252] mb-4">
+                    <div className="grid grid-cols-2 gap-2 py-2.5 px-3 rounded-2xl bg-[#FAF8F5] dark:bg-[#222222] border border-[#DDD8CF] dark:border-[#333333] text-[11px] text-[#525252] dark:text-[#CCCCCC] mb-4">
                       <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <Clock className="w-3.5 h-3.5 text-[#B38E22] dark:text-[#D4AF37]" />
                         <span>{formatDuration(service.duracion)}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <Calendar className="w-3.5 h-3.5 text-[#B38E22] dark:text-[#D4AF37]" />
                         <span>Mant. {service.mantenimientoDias} días</span>
                       </div>
                     </div>
@@ -378,13 +378,13 @@ export default function AdminServicesPage() {
                     {/* Qué incluye */}
                     {service.queIncluye && service.queIncluye.length > 0 && (
                       <div className="space-y-1 mb-4">
-                        <span className="text-[10px] uppercase font-bold text-[#737373] tracking-wider block">
+                        <span className="text-[10px] uppercase font-bold text-[#737373] dark:text-[#A0A0A0] tracking-wider block">
                           Incluye:
                         </span>
-                        <ul className="text-xs text-[#525252] space-y-1">
+                        <ul className="text-xs text-[#525252] dark:text-[#CCCCCC] space-y-1">
                           {service.queIncluye.slice(0, 3).map((inc, i) => (
                             <li key={i} className="flex items-center gap-1.5">
-                              <Check className="w-3 h-3 text-[#D4AF37] shrink-0" />
+                              <Check className="w-3 h-3 text-[#B38E22] dark:text-[#D4AF37] shrink-0" />
                               <span className="truncate">{inc}</span>
                             </li>
                           ))}
@@ -400,10 +400,10 @@ export default function AdminServicesPage() {
                 </div>
 
                 {/* Acciones inferiores */}
-                <div className="p-4 bg-[#FAF8F5]/60 border-t border-[#F5F0E6] flex items-center justify-between">
-                  <div className="text-[10px] font-semibold text-[#737373]">
+                <div className="p-4 bg-[#FAF8F5]/60 dark:bg-[#161616] border-t border-[#F5F0E6] dark:border-[#2E2E2E] flex items-center justify-between">
+                  <div className="text-[10px] font-semibold text-[#737373] dark:text-[#A0A0A0]">
                     {service.activo ? (
-                      <span className="text-emerald-700 flex items-center gap-1">
+                      <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         Activo en reserva
                       </span>
@@ -415,14 +415,14 @@ export default function AdminServicesPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleOpenEditModal(service)}
-                      className="p-1.5 rounded-full hover:bg-[#FFFFFF] border border-transparent hover:border-[#DCC5A3] text-[#2B2B2B] text-xs transition-colors cursor-pointer"
+                      className="p-1.5 rounded-full hover:bg-[#FFFFFF] dark:hover:bg-[#252525] border border-transparent hover:border-[#DDD8CF] dark:hover:border-[#333333] text-[#171717] dark:text-white text-xs transition-colors cursor-pointer"
                       title="Editar servicio"
                     >
-                      <Edit2 className="w-3.5 h-3.5 text-[#2B2B2B]" />
+                      <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(service.id, service.nombre)}
-                      className="p-1.5 rounded-full hover:bg-red-50 border border-transparent hover:border-red-200 text-red-600 text-xs transition-colors cursor-pointer"
+                      className="p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-950/40 border border-transparent hover:border-red-200 dark:hover:border-red-800 text-red-600 dark:text-red-400 text-xs transition-colors cursor-pointer"
                       title="Eliminar servicio"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -436,14 +436,14 @@ export default function AdminServicesPage() {
 
         {/* Modal para Crear / Editar Servicio */}
         {isModalOpen && editingService && (
-          <div className="fixed inset-0 z-50 bg-[#2B2B2B]/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-[#FFFFFF] rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 border border-[#DCC5A3] shadow-2xl my-8">
-              <div className="flex items-center justify-between pb-4 border-b border-[#F5F0E6] mb-6">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-[#FFFFFF] dark:bg-[#1A1A1A] rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 border border-[#DDD8CF] dark:border-[#333333] shadow-2xl my-8 text-[#171717] dark:text-white">
+              <div className="flex items-center justify-between pb-4 border-b border-[#EBE6DC] dark:border-[#2E2E2E] mb-6">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-[#D4AF37] tracking-wider">
+                  <span className="text-[10px] uppercase font-bold text-[#B38E22] dark:text-[#D4AF37] tracking-wider">
                     Editor de Catálogo
                   </span>
-                  <h2 className="font-cinzel text-xl font-bold text-[#2B2B2B]">
+                  <h2 className="font-cinzel text-xl font-bold text-[#171717] dark:text-[#FFFFFF]">
                     {editingService.id ? `Modificar: ${editingService.nombre}` : "Nuevo Servicio"}
                   </h2>
                 </div>

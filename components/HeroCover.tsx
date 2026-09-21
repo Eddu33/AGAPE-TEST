@@ -43,14 +43,14 @@ export default function HeroCover() {
         {/* Textura ambiental difusa a pantalla completa */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 filter blur-[2px] scale-105"
-          style={{ backgroundImage: "url('/agape-bg.jpg')" }}
+          style={{ backgroundImage: "url('/agape-bg.png')" }}
         />
 
         {/* Monograma / Arte central ÁGAPE sin elementos que lo tapen */}
         <div className="absolute inset-0 flex items-center justify-center p-6 sm:p-12">
           <div
             className="w-full max-w-2xl sm:max-w-3xl aspect-square bg-contain bg-center bg-no-repeat filter drop-shadow-[0_20px_60px_rgba(0,0,0,0.95)]"
-            style={{ backgroundImage: "url('/agape-bg.jpg')" }}
+            style={{ backgroundImage: "url('/agape-bg.png')" }}
           />
         </div>
 

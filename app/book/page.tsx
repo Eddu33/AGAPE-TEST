@@ -215,10 +215,10 @@ function BookContent() {
             Sistema de Turnos Online
           </span>
         </div>
-        <h1 className="font-cinzel text-3xl sm:text-4xl font-bold tracking-wider text-[#FFFFFF] mb-2 uppercase">
+        <h1 className="font-cinzel text-3xl sm:text-4xl font-bold tracking-wider text-[#171717] dark:text-[#FFFFFF] mb-2 uppercase">
           Reserva tu Experiencia en el Estudio
         </h1>
-        <p className="text-xs sm:text-sm text-[#B0B0B0] font-light">
+        <p className="text-xs sm:text-sm text-[#666666] dark:text-[#B0B0B0] font-light">
           Selecciona tu servicio, elige el día y el horario libre que mejor se adapte a tu rutina.
         </p>
       </div>
@@ -227,16 +227,16 @@ function BookContent() {
         {/* COLUMNA IZQUIERDA: PASO 1, 2 y 3 */}
         <div className="lg:col-span-2 space-y-8">
           {/* PASO 1: SERVICIO & EXTRAS */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-[#141414]/80 border border-white/10 backdrop-blur-md shadow-2xl text-white">
+          <div className="p-6 sm:p-8 rounded-3xl bg-[#FFFFFF] dark:bg-[#141414]/80 border border-[#E2DBD0] dark:border-white/10 backdrop-blur-md shadow-xl text-[#171717] dark:text-white transition-colors duration-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-7 h-7 rounded-full bg-[#D4AF37] text-[#121212] text-xs font-bold flex items-center justify-center">
                 1
               </div>
               <div>
-                <h2 className="font-cinzel text-lg sm:text-xl font-bold text-[#FFFFFF]">
+                <h2 className="font-cinzel text-lg sm:text-xl font-bold text-[#171717] dark:text-[#FFFFFF]">
                   Elige tu Servicio Principal
                 </h2>
-                <p className="text-xs text-[#A3A3A3] font-light">
+                <p className="text-xs text-[#737373] dark:text-[#A3A3A3] font-light">
                   Cada servicio tiene una duración base para asegurar máxima prolijidad.
                 </p>
               </div>
@@ -251,12 +251,12 @@ function BookContent() {
                     onClick={() => setSelectedService(service)}
                     className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex gap-3.5 items-center ${
                       isSelected
-                        ? "bg-[#252119] text-[#FFFFFF] border-2 border-[#D4AF37] shadow-md"
-                        : "bg-[#1A1A1A] text-[#E5E5E5] border border-[#2D2D2D] hover:border-[#D4AF37]/50"
+                        ? "bg-[#FFFDF9] dark:bg-[#252119] text-[#171717] dark:text-[#FFFFFF] border-2 border-[#D4AF37] shadow-md"
+                        : "bg-[#FAF8F5] dark:bg-[#1A1A1A] text-[#171717] dark:text-[#E5E5E5] border border-[#E2DBD0] dark:border-[#2D2D2D] hover:border-[#D4AF37]/50"
                     }`}
                   >
                     {service.imagenUrl && (
-                      <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-[#121212] border border-[#262626]">
+                      <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-[#EFEBE4] dark:bg-[#121212] border border-[#E2DBD0] dark:border-[#262626]">
                         <img
                           src={service.imagenUrl}
                           alt={service.nombre}
@@ -266,19 +266,19 @@ function BookContent() {
                     )}
                     <div className="flex-1 flex flex-col justify-between">
                       <div className="flex items-start justify-between gap-1">
-                        <span className="font-cinzel text-xs sm:text-sm font-semibold leading-tight text-white">
+                        <span className="font-cinzel text-xs sm:text-sm font-semibold leading-tight text-[#171717] dark:text-white">
                           {service.nombre}
                         </span>
-                        <span className="text-xs font-bold text-[#D4AF37] whitespace-nowrap">
+                        <span className="text-xs font-bold text-[#B38E22] dark:text-[#D4AF37] whitespace-nowrap">
                           {formatPrice(service.precio)}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 text-[11px] mt-2 opacity-80">
-                        <span className="px-2 py-0.5 rounded-full bg-[#242424] text-[#D4AF37] text-[9px] font-semibold border border-[#333333]">
+                        <span className="px-2 py-0.5 rounded-full bg-[#F3EFEA] dark:bg-[#242424] text-[#A27B2C] dark:text-[#D4AF37] text-[9px] font-semibold border border-[#E2DBD0] dark:border-[#333333]">
                           {service.categoria}
                         </span>
-                        <span className="flex items-center gap-1 text-[#A3A3A3]">
-                          <Clock className="w-3 h-3 text-[#D4AF37]" />
+                        <span className="flex items-center gap-1 text-[#737373] dark:text-[#A3A3A3]">
+                          <Clock className="w-3 h-3 text-[#B38E22] dark:text-[#D4AF37]" />
                           {service.duracion} min
                         </span>
                       </div>
@@ -289,8 +289,8 @@ function BookContent() {
             </div>
 
             {/* Extras opcionales */}
-            <div className="border-t border-[#262626] pt-4">
-              <div className="text-xs font-semibold uppercase tracking-wider text-[#D4AF37] mb-3">
+            <div className="border-t border-[#E2DBD0] dark:border-[#262626] pt-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#B38E22] dark:text-[#D4AF37] mb-3">
                 Extras y Diseños (opcional)
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -302,8 +302,8 @@ function BookContent() {
                       onClick={() => toggleExtra(extra.id)}
                       className={`p-3 rounded-xl border text-xs flex items-center justify-between cursor-pointer transition-all ${
                         isChecked
-                          ? "bg-[#252119] border-2 border-[#D4AF37] font-medium text-[#FFFFFF]"
-                          : "bg-[#1A1A1A] border border-[#2A2A2A] text-[#A3A3A3] hover:border-[#D4AF37]/50"
+                          ? "bg-[#FFFDF9] dark:bg-[#252119] border-2 border-[#D4AF37] font-medium text-[#171717] dark:text-[#FFFFFF]"
+                          : "bg-[#FAF8F5] dark:bg-[#1A1A1A] border border-[#E2DBD0] dark:border-[#2A2A2A] text-[#555555] dark:text-[#A3A3A3] hover:border-[#D4AF37]/50"
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -311,18 +311,18 @@ function BookContent() {
                           className={`w-4 h-4 rounded flex items-center justify-center border ${
                             isChecked
                               ? "bg-[#D4AF37] border-[#D4AF37] text-[#121212]"
-                              : "border-[#444444] bg-[#222222]"
+                              : "border-[#CCCCCC] bg-[#FFFFFF] dark:border-[#444444] dark:bg-[#222222]"
                           }`}
                         >
-                          {isChecked && <Check className="w-3 h-3" />}
+                          {isChecked && <Check className="w-3 h-3 text-[#121212]" />}
                         </div>
-                        <span className={isChecked ? "text-white" : "text-[#D1D1D1]"}>{extra.nombre}</span>
+                        <span className={isChecked ? "text-[#171717] dark:text-white font-semibold" : "text-[#555555] dark:text-[#D1D1D1]"}>{extra.nombre}</span>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="font-semibold text-[#D4AF37]">
+                        <span className="font-semibold text-[#B38E22] dark:text-[#D4AF37]">
                           +{formatPrice(extra.precio)}
                         </span>
-                        <span className="text-[10px] text-[#888888] block">
+                        <span className="text-[10px] text-[#737373] dark:text-[#888888] block">
                           +{extra.duracion}m
                         </span>
                       </div>
@@ -334,16 +334,16 @@ function BookContent() {
           </div>
 
           {/* PASO 2: CALENDARIO Y HORARIOS DISPONIBLES */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-[#161616]/85 border border-[#2D2D2D] backdrop-blur-md shadow-xl text-white">
+          <div className="p-6 sm:p-8 rounded-3xl bg-[#FFFFFF] dark:bg-[#161616]/85 border border-[#E2DBD0] dark:border-[#2D2D2D] backdrop-blur-md shadow-xl text-[#171717] dark:text-white transition-colors duration-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-7 h-7 rounded-full bg-[#D4AF37] text-[#121212] text-xs font-bold flex items-center justify-center">
                 2
               </div>
               <div>
-                <h2 className="font-cinzel text-lg sm:text-xl font-bold text-[#FFFFFF]">
+                <h2 className="font-cinzel text-lg sm:text-xl font-bold text-[#171717] dark:text-[#FFFFFF]">
                   Selecciona Fecha y Horario Libre
                 </h2>
-                <p className="text-xs text-[#A3A3A3] font-light">
+                <p className="text-xs text-[#737373] dark:text-[#A3A3A3] font-light">
                   El motor calcula los horarios que garantizan {totalDuration} min de atención continua.
                 </p>
               </div>
@@ -351,20 +351,20 @@ function BookContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
               {/* Selector de calendario */}
-              <div className="flex justify-center p-3 rounded-2xl bg-[#121212] border border-[#262626]">
+              <div className="flex justify-center p-3 rounded-2xl bg-[#FAF8F5] dark:bg-[#121212] border border-[#E2DBD0] dark:border-[#262626]">
                 <CalendarUI
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
                   disabled={(date) => isBefore(date, startOfToday())}
                   locale={es}
-                  className="rounded-md text-white"
+                  className="rounded-md text-[#171717] dark:text-white"
                 />
               </div>
 
               {/* Lista de horarios generados */}
               <div>
-                <div className="text-xs font-bold text-[#FFFFFF] mb-2 flex items-center justify-between">
+                <div className="text-xs font-bold text-[#171717] dark:text-[#FFFFFF] mb-2 flex items-center justify-between">
                   <span>
                     {selectedDate ? (
                       format(selectedDate, "EEEE d 'de' MMMM", { locale: es })
@@ -372,33 +372,33 @@ function BookContent() {
                       "Selecciona un día"
                     )}
                   </span>
-                  <span className="text-[11px] font-normal text-[#A3A3A3]">
+                  <span className="text-[11px] font-normal text-[#737373] dark:text-[#A3A3A3]">
                     Duración: {formatDuration(totalDuration)}
                   </span>
                 </div>
 
                 {loadingSlots ? (
-                  <div className="p-8 text-center text-xs text-[#A3A3A3]">
+                  <div className="p-8 text-center text-xs text-[#737373] dark:text-[#A3A3A3]">
                     <div className="w-6 h-6 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                     Calculando horarios sin superposiciones...
                   </div>
                 ) : isClosedDay ? (
-                  <div className="p-6 rounded-2xl bg-[#1A1A1A] text-center border border-[#333333]">
-                    <AlertCircle className="w-6 h-6 text-[#D4AF37] mx-auto mb-2" />
-                    <p className="text-xs font-medium text-[#FFFFFF]">
+                  <div className="p-6 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A1A1A] text-center border border-[#E2DBD0] dark:border-[#333333]">
+                    <AlertCircle className="w-6 h-6 text-[#B38E22] dark:text-[#D4AF37] mx-auto mb-2" />
+                    <p className="text-xs font-medium text-[#171717] dark:text-[#FFFFFF]">
                       El estudio no atiende en este día
                     </p>
-                    <p className="text-[11px] text-[#A3A3A3] mt-1">
+                    <p className="text-[11px] text-[#737373] dark:text-[#A3A3A3] mt-1">
                       Atendemos de Martes a Sábados. Por favor selecciona otro día en el calendario.
                     </p>
                   </div>
                 ) : availableSlots.length === 0 ? (
-                  <div className="p-6 rounded-2xl bg-[#1A1A1A] text-center border border-[#333333]">
-                    <Clock className="w-6 h-6 text-[#A3A3A3] mx-auto mb-2" />
-                    <p className="text-xs font-medium text-[#FFFFFF]">
+                  <div className="p-6 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A1A1A] text-center border border-[#E2DBD0] dark:border-[#333333]">
+                    <Clock className="w-6 h-6 text-[#737373] dark:text-[#A3A3A3] mx-auto mb-2" />
+                    <p className="text-xs font-medium text-[#171717] dark:text-[#FFFFFF]">
                       Agenda completa para este día
                     </p>
-                    <p className="text-[11px] text-[#A3A3A3] mt-1">
+                    <p className="text-[11px] text-[#737373] dark:text-[#A3A3A3] mt-1">
                       No quedan bloques libres de {totalDuration} minutos. Prueba seleccionando otra fecha.
                     </p>
                   </div>
@@ -414,13 +414,13 @@ function BookContent() {
                           className={`py-2.5 px-3 rounded-xl border text-xs text-center transition-all cursor-pointer ${
                             isSelected
                               ? "bg-[#D4AF37] text-[#121212] border-[#D4AF37] shadow-md font-bold scale-102"
-                              : "bg-[#1A1A1A] text-[#E5E5E5] border border-[#2A2A2A] hover:border-[#D4AF37] hover:bg-[#222222]"
+                              : "bg-[#FAF8F5] dark:bg-[#1A1A1A] text-[#171717] dark:text-[#E5E5E5] border border-[#E2DBD0] dark:border-[#2A2A2A] hover:border-[#D4AF37] hover:bg-[#F0ECE4] dark:hover:bg-[#222222]"
                           }`}
                         >
                           <div className="text-sm font-bold font-cinzel">
                             {slot.time}
                           </div>
-                          <div className={`text-[10px] ${isSelected ? "text-[#121212]/80" : "text-[#D4AF37]"}`}>
+                          <div className={`text-[10px] ${isSelected ? "text-[#121212]/80" : "text-[#B38E22] dark:text-[#D4AF37]"}`}>
                             hasta {slot.endTime}
                           </div>
                         </button>
@@ -433,16 +433,16 @@ function BookContent() {
           </div>
 
           {/* PASO 3: TUS DATOS DE CONTACTO */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-[#161616]/85 border border-[#2D2D2D] backdrop-blur-md shadow-xl text-white">
+          <div className="p-6 sm:p-8 rounded-3xl bg-[#FFFFFF] dark:bg-[#161616]/85 border border-[#E2DBD0] dark:border-[#2D2D2D] backdrop-blur-md shadow-xl text-[#171717] dark:text-white transition-colors duration-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-7 h-7 rounded-full bg-[#D4AF37] text-[#121212] text-xs font-bold flex items-center justify-center">
                 3
               </div>
               <div>
-                <h2 className="font-cinzel text-lg sm:text-xl font-bold text-[#FFFFFF]">
+                <h2 className="font-cinzel text-lg sm:text-xl font-bold text-[#171717] dark:text-[#FFFFFF]">
                   Completa tus Datos
                 </h2>
-                <p className="text-xs text-[#A3A3A3] font-light">
+                <p className="text-xs text-[#737373] dark:text-[#A3A3A3] font-light">
                   Te enviaremos los recordatorios y la confirmación a tu WhatsApp.
                 </p>
               </div>
@@ -450,8 +450,8 @@ function BookContent() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-xs font-semibold text-[#E0E0E0] mb-1.5 flex items-center gap-1">
-                  <User className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <label className="block text-xs font-semibold text-[#171717] dark:text-[#E0E0E0] mb-1.5 flex items-center gap-1">
+                  <User className="w-3.5 h-3.5 text-[#B38E22] dark:text-[#D4AF37]" />
                   <span>Nombre y Apellido *</span>
                 </label>
                 <input
@@ -460,13 +460,13 @@ function BookContent() {
                   placeholder="Ej: Sofia Martínez"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#333333] text-xs focus:outline-none focus:border-[#D4AF37] bg-[#121212] text-white placeholder:text-[#666666]"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#E2DBD0] dark:border-[#333333] text-xs focus:outline-none focus:border-[#D4AF37] bg-[#FAF8F5] dark:bg-[#121212] text-[#171717] dark:text-white placeholder:text-[#888888] dark:placeholder:text-[#666666]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#E0E0E0] mb-1.5 flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <label className="block text-xs font-semibold text-[#171717] dark:text-[#E0E0E0] mb-1.5 flex items-center gap-1">
+                  <Phone className="w-3.5 h-3.5 text-[#B38E22] dark:text-[#D4AF37]" />
                   <span>Teléfono / WhatsApp *</span>
                 </label>
                 <input
@@ -475,14 +475,14 @@ function BookContent() {
                   placeholder="Ej: 3516002716"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#333333] text-xs focus:outline-none focus:border-[#D4AF37] bg-[#121212] text-white placeholder:text-[#666666]"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#E2DBD0] dark:border-[#333333] text-xs focus:outline-none focus:border-[#D4AF37] bg-[#FAF8F5] dark:bg-[#121212] text-[#171717] dark:text-white placeholder:text-[#888888] dark:placeholder:text-[#666666]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#E0E0E0] mb-1.5 flex items-center gap-1">
-                <FileText className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <label className="block text-xs font-semibold text-[#171717] dark:text-[#E0E0E0] mb-1.5 flex items-center gap-1">
+                <FileText className="w-3.5 h-3.5 text-[#B38E22] dark:text-[#D4AF37]" />
                 <span>Observaciones o detalles de diseño (opcional)</span>
               </label>
               <textarea
@@ -490,7 +490,7 @@ function BookContent() {
                 placeholder="Ej: Tengo una uña partida en la mano derecha, me gustaría un tono vía láctea con francesita."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-[#333333] text-xs focus:outline-none focus:border-[#D4AF37] bg-[#121212] text-white placeholder:text-[#666666]"
+                className="w-full px-4 py-2.5 rounded-xl border border-[#E2DBD0] dark:border-[#333333] text-xs focus:outline-none focus:border-[#D4AF37] bg-[#FAF8F5] dark:bg-[#121212] text-[#171717] dark:text-white placeholder:text-[#888888] dark:placeholder:text-[#666666]"
               />
             </div>
           </div>
@@ -498,26 +498,26 @@ function BookContent() {
 
         {/* COLUMNA DERECHA: RESUMEN, POLÍTICAS Y CONFIRMAR */}
         <div className="lg:col-span-1 sticky top-20 space-y-4">
-          <div className="p-6 rounded-3xl bg-[#141414]/95 text-[#FFFFFF] border-2 border-[#D4AF37] shadow-2xl backdrop-blur-md">
-            <div className="text-[10px] uppercase font-bold tracking-widest text-[#D4AF37] mb-2">
+          <div className="p-6 rounded-3xl bg-[#FFFFFF] dark:bg-[#141414]/95 text-[#171717] dark:text-[#FFFFFF] border-2 border-[#D4AF37] shadow-2xl backdrop-blur-md transition-colors duration-200">
+            <div className="text-[10px] uppercase font-bold tracking-widest text-[#B38E22] dark:text-[#D4AF37] mb-2">
               Resumen de Reserva
             </div>
-            <h3 className="font-cinzel text-xl font-bold text-[#FFFFFF] mb-4">
+            <h3 className="font-cinzel text-xl font-bold text-[#171717] dark:text-[#FFFFFF] mb-4">
               ÁGAPE STUDIO
             </h3>
 
             {/* Servicio principal */}
-            <div className="space-y-2 text-xs border-b border-[#2C2C2C] pb-4 mb-4">
-              <div className="flex justify-between font-medium">
-                <span>{selectedService.nombre}</span>
-                <span className="text-[#D4AF37]">{formatPrice(selectedService.precio)}</span>
+            <div className="space-y-2 text-xs border-b border-[#E2DBD0] dark:border-[#2C2C2C] pb-4 mb-4">
+              <div className="flex justify-between font-semibold">
+                <span className="text-[#171717] dark:text-white">{selectedService.nombre}</span>
+                <span className="text-[#B38E22] dark:text-[#D4AF37]">{formatPrice(selectedService.precio)}</span>
               </div>
-              <div className="text-[11px] text-[#888888]">
+              <div className="text-[11px] text-[#737373] dark:text-[#888888]">
                 Tiempo base: {selectedService.duracion} min
               </div>
 
               {selectedExtras.map((extra) => (
-                <div key={extra.id} className="flex justify-between text-[#D4AF37] text-xs pt-1">
+                <div key={extra.id} className="flex justify-between text-[#B38E22] dark:text-[#D4AF37] text-xs pt-1">
                   <span>+ {extra.nombre}</span>
                   <span>+{formatPrice(extra.precio)}</span>
                 </div>
@@ -525,18 +525,18 @@ function BookContent() {
             </div>
 
             {/* Fecha y horario seleccionado */}
-            <div className="space-y-2 text-xs border-b border-[#2C2C2C] pb-4 mb-4">
-              <div className="flex items-center gap-2 text-[#A3A3A3]">
-                <CalendarIcon className="w-4 h-4 text-[#D4AF37]" />
-                <span className="text-white">
+            <div className="space-y-2 text-xs border-b border-[#E2DBD0] dark:border-[#2C2C2C] pb-4 mb-4">
+              <div className="flex items-center gap-2 text-[#737373] dark:text-[#A3A3A3]">
+                <CalendarIcon className="w-4 h-4 text-[#B38E22] dark:text-[#D4AF37]" />
+                <span className="text-[#171717] dark:text-white font-medium">
                   {selectedDate
                     ? format(selectedDate, "EEEE d 'de' MMMM, yyyy", { locale: es })
                     : "Fecha no seleccionada"}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-[#A3A3A3]">
-                <Clock className="w-4 h-4 text-[#D4AF37]" />
-                <span className="text-white">
+              <div className="flex items-center gap-2 text-[#737373] dark:text-[#A3A3A3]">
+                <Clock className="w-4 h-4 text-[#B38E22] dark:text-[#D4AF37]" />
+                <span className="text-[#171717] dark:text-white font-medium">
                   {selectedSlot
                     ? `${selectedSlot.time} hs a ${selectedSlot.endTime} hs (${totalDuration} min)`
                     : "Horario no seleccionado"}
@@ -546,16 +546,16 @@ function BookContent() {
 
             {/* Totales */}
             <div className="flex items-center justify-between mb-5">
-              <span className="font-cinzel text-sm text-[#A3A3A3]">Total a Abonar:</span>
-              <span className="font-cinzel text-2xl font-bold text-[#D4AF37]">
+              <span className="font-cinzel text-sm text-[#737373] dark:text-[#A3A3A3]">Total a Abonar:</span>
+              <span className="font-cinzel text-2xl font-bold text-[#B38E22] dark:text-[#D4AF37]">
                 {formatPrice(totalPrice)}
               </span>
             </div>
 
             {/* Políticas de seña y cancelación */}
-            <div className="p-3 rounded-xl bg-[#1A1A1A] border border-[#2E2E2E] text-[11px] text-[#A3A3A3] space-y-1.5 mb-5 leading-snug">
-              <div className="flex items-start gap-1.5 text-[#FFFFFF] font-semibold">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+            <div className="p-3.5 rounded-2xl bg-[#FAF8F5] dark:bg-[#1A1A1A] border border-[#E2DBD0] dark:border-[#2E2E2E] text-[11px] text-[#555555] dark:text-[#A3A3A3] space-y-1.5 mb-5 leading-snug">
+              <div className="flex items-start gap-1.5 text-[#171717] dark:text-[#FFFFFF] font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#B38E22] dark:text-[#D4AF37] shrink-0 mt-0.5" />
                 <span>Políticas de Turno & Asistencia</span>
               </div>
               <p>• Tolerancia máxima de espera: 15 minutos.</p>
@@ -565,8 +565,8 @@ function BookContent() {
 
             {/* Error si existe */}
             {errorMessage && (
-              <div className="p-3 rounded-xl bg-red-950/80 border border-red-500 text-red-200 text-xs mb-4 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+              <div className="p-3 rounded-xl bg-red-100 dark:bg-red-950/80 border border-red-300 dark:border-red-500 text-red-800 dark:text-red-200 text-xs mb-4 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                 <span>{errorMessage}</span>
               </div>
             )}
@@ -575,7 +575,7 @@ function BookContent() {
             <button
               type="submit"
               disabled={submitting || !selectedDate || !selectedSlot}
-              className="w-full py-4 px-4 rounded-full bg-[#D4AF37] text-[#121212] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#FFFFFF] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg cursor-pointer group"
+              className="w-full py-4 px-4 rounded-full bg-[#D4AF37] text-[#121212] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#171717] hover:text-[#FFFFFF] dark:hover:bg-[#FFFFFF] dark:hover:text-[#121212] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg cursor-pointer group"
             >
               {submitting ? (
                 <span>Confirmando tu turno...</span>
