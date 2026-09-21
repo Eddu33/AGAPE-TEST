@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import HeroCover from "@/components/HeroCover";
 import { Sparkles, Calendar, Clock, ArrowRight, Check } from "lucide-react";
 import { getPublicServices } from "./actions";
 import { formatPrice, formatDuration } from "@/lib/services";
@@ -13,53 +14,58 @@ export default async function Home() {
       : allServices.slice(0, 3);
 
   return (
-    <div className="flex flex-col min-h-screen bg-transparent">
+    <div className="flex flex-col min-h-screen bg-[#0D0D0D]">
       <Navbar />
 
-      {/* HERO SECTION */}
-      <section className="relative overflow-hidden bg-transparent pt-12 pb-20 sm:pt-20 sm:pb-28 border-b border-[#262626]/80">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          {/* Badge sutil */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#181818]/90 border border-[#333333] shadow-md text-xs font-medium text-[#E0E0E0] mb-6">
-            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span className="tracking-wide">Estudio Exclusivo de Manicuría</span>
+      {/* PRIMERA SECCIÓN: SOLO EL BACKGROUND (Se desvanece al escrolear) */}
+      <HeroCover />
+
+      {/* SECCIÓN DE INFORMACIÓN: Con fondo oscuro sólido para legibilidad perfecta */}
+      <div id="informacion" className="relative z-10 bg-[#0D0D0D]">
+        {/* HERO CONTENT / INFORMACIÓN PRINCIPAL */}
+        <section className="relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-28 border-b border-[#262626]/80">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            {/* Badge sutil */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#181818] border border-[#333333] shadow-md text-xs font-medium text-[#E0E0E0] mb-6">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span className="tracking-wide">Estudio Exclusivo de Manicuría</span>
+            </div>
+
+            {/* Título Principal */}
+            <h1 className="font-cinzel text-4xl sm:text-6xl font-bold tracking-wider text-[#FFFFFF] mb-4">
+              ÁGAPE STUDIO
+            </h1>
+
+            {/* Esencia */}
+            <p className="font-cinzel text-lg sm:text-2xl text-[#D4AF37] italic font-normal mb-6">
+              “La belleza nace del amor perfecto”
+            </p>
+
+            {/* Descripción */}
+            <p className="max-w-2xl mx-auto text-sm sm:text-base text-[#A3A3A3] font-light leading-relaxed mb-10">
+              Un espacio creado para consentirte y recordar tu valor único. Te brindamos un servicio de manicuría personalizado, técnicas avanzadas de cuidado y un ambiente cálido para desconectarte y brillar.
+            </p>
+
+            {/* Botones de acción (CTA) */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/book"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-[#D4AF37] text-[#121212] font-bold text-base hover:bg-[#FFFFFF] hover:text-[#121212] transition-all duration-300 shadow-lg group"
+              >
+                <Calendar className="w-5 h-5 text-[#121212]" />
+                <span>Reservar mi Turno</span>
+              </Link>
+
+              <Link
+                href="/servicios"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-[#181818] text-[#FFFFFF] border border-[#333333] font-medium text-base hover:border-[#D4AF37] hover:bg-[#222222] transition-colors"
+              >
+                <span>Ver Servicios & Precios</span>
+                <ArrowRight className="w-4 h-4 text-[#A3A3A3]" />
+              </Link>
+            </div>
           </div>
-
-          {/* Título Principal */}
-          <h1 className="font-cinzel text-4xl sm:text-6xl font-bold tracking-wider text-[#FFFFFF] mb-4">
-            ÁGAPE STUDIO
-          </h1>
-
-          {/* Esencia */}
-          <p className="font-cinzel text-lg sm:text-2xl text-[#D4AF37] italic font-normal mb-6">
-            “La belleza nace del amor perfecto”
-          </p>
-
-          {/* Descripción */}
-          <p className="max-w-2xl mx-auto text-sm sm:text-base text-[#A3A3A3] font-light leading-relaxed mb-10">
-            Un espacio creado para consentirte y recordar tu valor único. Te brindamos un servicio de manicuría personalizado, técnicas avanzadas de cuidado y un ambiente cálido para desconectarte y brillar.
-          </p>
-
-          {/* Botones de acción (CTA) */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/book"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-[#D4AF37] text-[#121212] font-bold text-base hover:bg-[#FFFFFF] hover:text-[#121212] transition-all duration-300 shadow-lg group"
-            >
-              <Calendar className="w-5 h-5 text-[#121212]" />
-              <span>Reservar mi Turno</span>
-            </Link>
-
-            <Link
-              href="/servicios"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-[#181818] text-[#FFFFFF] border border-[#333333] font-medium text-base hover:border-[#D4AF37] hover:bg-[#222222] transition-colors"
-            >
-              <span>Ver Servicios & Precios</span>
-              <ArrowRight className="w-4 h-4 text-[#A3A3A3]" />
-            </Link>
-          </div>
-        </div>
-      </section>
+        </section>
 
       {/* SECCIÓN DE SERVICIOS DESTACADOS */}
       <section id="servicios" className="py-16 sm:py-24 bg-transparent">
@@ -208,6 +214,7 @@ export default async function Home() {
           </Link>
         </div>
       </section>
+      </div>
 
       <Footer />
     </div>
