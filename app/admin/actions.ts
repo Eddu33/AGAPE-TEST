@@ -42,10 +42,24 @@ export interface DashboardStats {
 export async function getAdminAppointments(): Promise<StoredAppointment[]> {
   try {
     const db = await getDatabase();
-    return db.appointments.sort((a, b) => {
-      const dateDiff = a.date.localeCompare(b.date);
+    return (db.appointments || []).map((a) => {
+      const cleanDate = a.date && a.date.includes("T") ? a.date.split("T")[0] : a.date;
+      const client = db.clients?.find((c) => c.id === a.clientId);
+      return {
+        ...a,
+        date: cleanDate || a.date,
+        clientName: a.clientName || client?.name || "Clienta",
+        clientPhone: a.clientPhone || client?.phone || "",
+        serviceName: a.serviceName || "Servicio Ágape",
+        totalPrice: typeof a.totalPrice === "number" ? a.totalPrice : 0,
+        startTime: a.startTime || "10:00",
+        endTime: a.endTime || "11:00",
+        durationMinutes: a.durationMinutes || 60,
+      };
+    }).sort((a, b) => {
+      const dateDiff = (a.date || "").localeCompare(b.date || "");
       if (dateDiff !== 0) return dateDiff;
-      return a.startTime.localeCompare(b.startTime);
+      return (a.startTime || "").localeCompare(b.startTime || "");
     });
   } catch (error) {
     console.error("Error al obtener turnos de administración:", error);
@@ -78,6 +92,8 @@ export async function updateAppointmentStatus(id: string, status: StoredAppointm
       apt.updatedAt = new Date().toISOString();
       await saveDatabase(db);
       revalidatePath("/admin/dashboard");
+      revalidatePath("/admin/stats");
+      revalidatePath("/admin/finances");
       return { success: true };
     }
     return { success: false, error: "Turno no encontrado" };
@@ -96,6 +112,8 @@ export async function deleteAppointment(id: string) {
     db.appointments = db.appointments.filter((a) => a.id !== id);
     await saveDatabase(db);
     revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/stats");
+    revalidatePath("/admin/finances");
     return { success: true };
   } catch (error: any) {
     console.error("Error al eliminar turno:", error);
@@ -120,6 +138,7 @@ export async function updateAppointmentPaymentStatus(
       apt.updatedAt = new Date().toISOString();
       await saveDatabase(db);
       revalidatePath("/admin/dashboard");
+      revalidatePath("/admin/stats");
       revalidatePath("/admin/finances");
       return { success: true };
     }
@@ -139,6 +158,7 @@ export async function rescheduleAppointment(
     startTime: string;
     status?: StoredAppointment["status"];
     paymentStatus?: StoredAppointment["paymentStatus"];
+    totalPrice?: number;
     notes?: string;
   }
 ) {
@@ -157,12 +177,14 @@ export async function rescheduleAppointment(
     apt.endTime = `${hours}:${minutes}`;
     if (data.status) apt.status = data.status;
     if (data.paymentStatus) apt.paymentStatus = data.paymentStatus;
+    if (data.totalPrice !== undefined) apt.totalPrice = Number(data.totalPrice);
     if (data.notes !== undefined) apt.notes = data.notes;
     apt.updatedAt = new Date().toISOString();
 
     await saveDatabase(db);
     revalidatePath("/admin/dashboard");
     revalidatePath("/admin/finances");
+    revalidatePath("/admin/stats");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -176,19 +198,25 @@ export async function rescheduleAppointment(
 export async function createManualAppointment(data: {
   clientName: string;
   clientPhone: string;
-  serviceId: string;
-  extraIds: string[];
+  serviceId?: string;
+  serviceName?: string;
+  extraIds?: string[];
   date: string; // "YYYY-MM-DD"
   startTime: string; // "15:00"
+  totalPrice?: number;
+  status?: StoredAppointment["status"];
+  paymentStatus?: StoredAppointment["paymentStatus"];
+  paymentMethod?: StoredAppointment["paymentMethod"];
   notes?: string;
 }) {
   try {
     const db = await getDatabase();
     const service = SERVICIOS_AGAPE.find((s) => s.id === data.serviceId) || SERVICIOS_AGAPE[0];
-    const extras = EXTRAS_AGAPE.filter((e) => data.extraIds.includes(e.id));
+    const extras = EXTRAS_AGAPE.filter((e) => (data.extraIds || []).includes(e.id));
 
     const totalDuration = calculateTotalDuration(service, extras);
-    const totalPrice = calculateTotalPrice(service, extras);
+    const calculatedPrice = calculateTotalPrice(service, extras);
+    const finalPrice = data.totalPrice !== undefined ? Number(data.totalPrice) : calculatedPrice;
 
     const startMinutes = timeStringToMinutes(data.startTime);
     const endMinutes = startMinutes + totalDuration;
@@ -213,16 +241,18 @@ export async function createManualAppointment(data: {
       clientId: client.id,
       clientName: data.clientName.trim(),
       clientPhone: data.clientPhone.trim(),
-      serviceId: service.id,
-      serviceName: service.nombre,
+      serviceId: data.serviceId || service.id,
+      serviceName: data.serviceName || service.nombre,
       extraIds: extras.map((e) => e.id),
       extraNames: extras.map((e) => e.nombre),
       date: data.date,
       startTime: data.startTime,
       endTime,
       durationMinutes: totalDuration,
-      totalPrice,
-      status: "CONFIRMED",
+      totalPrice: finalPrice,
+      status: data.status || "CONFIRMED",
+      paymentStatus: data.paymentStatus || "PENDING",
+      paymentMethod: data.paymentMethod || "TRANSFERENCIA",
       notes: data.notes,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -231,6 +261,8 @@ export async function createManualAppointment(data: {
     db.appointments.push(newApt);
     await saveDatabase(db);
     revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/finances");
+    revalidatePath("/admin/stats");
     return { success: true, appointmentId: newApt.id };
   } catch (error: any) {
     console.error("Error creando turno manual:", error);
@@ -288,27 +320,49 @@ export async function removeScheduleBlock(id: string) {
 export async function getAdminStats(): Promise<DashboardStats> {
   try {
     const db = await getDatabase();
-    const total = db.appointments.length;
-    const confirmed = db.appointments.filter((a) => a.status === "CONFIRMED").length;
-    const completed = db.appointments.filter((a) => a.status === "COMPLETED").length;
-    const cancelled = db.appointments.filter((a) => a.status === "CANCELLED").length;
-    const noShow = db.appointments.filter((a) => a.status === "NO_SHOW").length;
+    const apts = db.appointments || [];
+    const total = apts.length;
+    const confirmed = apts.filter((a) => a.status === "CONFIRMED").length;
+    const completed = apts.filter((a) => a.status === "COMPLETED").length;
+    const cancelled = apts.filter((a) => a.status === "CANCELLED").length;
+    const noShow = apts.filter((a) => a.status === "NO_SHOW").length;
 
-    const totalRevenue = db.appointments
-      .filter((a) => a.status === "COMPLETED")
-      .reduce((sum, a) => sum + (a.totalPrice || 0), 0);
+    const getCollectedStat = (a: StoredAppointment) => {
+      if (a.status === "CANCELLED") return 0;
+      if (
+        a.paymentStatus === "PENDING" ||
+        a.paymentStatus === "DEPOSIT_REQUESTED" ||
+        a.paymentStatus === "AWAITING_VERIFICATION"
+      ) {
+        return 0;
+      }
+      const price = Number(a.totalPrice) || 0;
+      if (a.paymentStatus === "PAID") {
+        return price;
+      }
+      if (a.paymentStatus === "DEPOSIT_PAID") {
+        return Math.round(price * 0.5);
+      }
+      return 0;
+    };
 
-    const pendingRevenue = db.appointments
-      .filter((a) => a.status === "CONFIRMED" || a.status === "PENDING")
-      .reduce((sum, a) => sum + (a.totalPrice || 0), 0);
+    const totalRevenue = apts.reduce((sum, a) => sum + getCollectedStat(a), 0);
+
+    const pendingRevenue = apts
+      .filter((a) => a.status !== "CANCELLED" && a.paymentStatus !== "PAID")
+      .reduce((sum, a) => {
+        const p = Number(a.totalPrice) || 0;
+        if (a.paymentStatus === "DEPOSIT_PAID") return sum + Math.round(p * 0.5);
+        return sum + p;
+      }, 0);
 
     // Servicios populares
     const serviceMap = new Map<string, { count: number; revenue: number }>();
-    db.appointments.forEach((apt) => {
+    apts.forEach((apt) => {
       const name = apt.serviceName || "Servicio";
       const existing = serviceMap.get(name) || { count: 0, revenue: 0 };
       existing.count += 1;
-      existing.revenue += apt.totalPrice || 0;
+      existing.revenue += Number(apt.totalPrice) || 0;
       serviceMap.set(name, existing);
     });
 
@@ -512,6 +566,36 @@ export async function deleteAdminExpense(id: string): Promise<{ success: boolean
   }
 }
 
+export async function updateAdminExpense(
+  id: string,
+  data: {
+    fecha: string;
+    categoria: Expense["categoria"];
+    descripcion: string;
+    monto: number;
+    observaciones?: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db = await getDatabase();
+    const exp = (db.expenses || []).find((e) => e.id === id);
+    if (exp) {
+      exp.fecha = data.fecha;
+      exp.categoria = data.categoria;
+      exp.descripcion = data.descripcion;
+      exp.monto = Number(data.monto);
+      exp.observaciones = data.observaciones || "";
+      await saveDatabase(db);
+      revalidatePath("/admin/finances");
+      revalidatePath("/admin/stats");
+      return { success: true };
+    }
+    return { success: false, error: "Gasto no encontrado" };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 export async function getFinancialSummary() {
   try {
     const db = await getDatabase();
@@ -526,22 +610,62 @@ export async function getFinancialSummary() {
     monday.setDate(now.getDate() - diffToMonday);
     const mondayStr = formatDateKey(monday);
 
-    const completedApts = db.appointments.filter((a) => a.status === "COMPLETED");
+    // Turnos válidos para cobro (excluye cancelados y pagos borrados/pendientes)
+    const getCollected = (a: StoredAppointment) => {
+      if (a.status === "CANCELLED") return 0; // Turno cancelado no genera ingreso
+      // Si el pago no está explícitamente confirmado como PAID o DEPOSIT_PAID, es 0
+      const price = Number(a.totalPrice) || 0;
+      if (a.paymentStatus === "PAID") {
+        return price;
+      }
+      if (a.paymentStatus === "DEPOSIT_PAID") {
+        return Math.round(price * 0.5);
+      }
+      return 0;
+    };
 
-    const totalIncome = completedApts.reduce((sum, a) => sum + (a.totalPrice || 0), 0);
-    const todayIncome = completedApts.filter((a) => a.date === todayStr).reduce((sum, a) => sum + (a.totalPrice || 0), 0);
-    const weekIncome = completedApts.filter((a) => a.date >= mondayStr).reduce((sum, a) => sum + (a.totalPrice || 0), 0);
-    const monthIncome = completedApts.filter((a) => a.date.startsWith(currentMonth)).reduce((sum, a) => sum + (a.totalPrice || 0), 0);
+    const apts = (db.appointments || []).map((a) => {
+      const cleanDate = a.date && a.date.includes("T") ? a.date.split("T")[0] : a.date;
+      return { ...a, date: cleanDate };
+    });
+
+    const incomeApts = apts.filter((a) => getCollected(a) > 0);
+
+    const totalIncome = incomeApts.reduce((sum, a) => sum + getCollected(a), 0);
+    const todayIncome = incomeApts.filter((a) => a.date === todayStr).reduce((sum, a) => sum + getCollected(a), 0);
+    const weekIncome = incomeApts.filter((a) => a.date >= mondayStr).reduce((sum, a) => sum + getCollected(a), 0);
+    const monthIncome = incomeApts.filter((a) => a.date.startsWith(currentMonth)).reduce((sum, a) => sum + getCollected(a), 0);
 
     const expenses = db.expenses || [];
-    const totalExpenses = expenses.reduce((sum, e) => sum + (e.monto || 0), 0);
-    const monthExpenses = expenses.filter((e) => e.fecha.startsWith(currentMonth)).reduce((sum, e) => sum + (e.monto || 0), 0);
+    const totalExpenses = expenses.reduce((sum, e) => sum + (Number(e.monto) || 0), 0);
+    const monthExpenses = expenses.filter((e) => (e.fecha || "").startsWith(currentMonth)).reduce((sum, e) => sum + (Number(e.monto) || 0), 0);
 
-    const cashIncome = completedApts.filter((a) => a.paymentMethod === "EFECTIVO").reduce((sum, a) => sum + a.totalPrice, 0);
-    const transferIncome = completedApts.filter((a) => a.paymentMethod === "TRANSFERENCIA").reduce((sum, a) => sum + a.totalPrice, 0);
+    const cashIncome = incomeApts
+      .filter((a) => a.paymentMethod === "EFECTIVO" || a.paymentMethod === ("CASH" as any))
+      .reduce((sum, a) => sum + getCollected(a), 0);
+    const transferIncome = incomeApts
+      .filter((a) => a.paymentMethod === "TRANSFERENCIA" || a.paymentMethod === ("TRANSFER" as any) || !a.paymentMethod)
+      .reduce((sum, a) => sum + getCollected(a), 0);
 
     const netResult = totalIncome - totalExpenses;
     const monthResult = monthIncome - monthExpenses;
+
+    const incomeBreakdown = incomeApts.map((a) => {
+      const client = db.clients?.find((c) => c.id === a.clientId);
+      const isDeposit = a.paymentStatus === "DEPOSIT_PAID";
+      return {
+        id: a.id,
+        clientName: a.clientName || client?.name || "Clienta",
+        serviceName: a.serviceName || "Servicio Ágape",
+        date: a.date,
+        startTime: a.startTime || "10:00",
+        paymentStatus: a.paymentStatus || "PAID",
+        paymentMethod: a.paymentMethod || "TRANSFERENCIA",
+        totalPrice: Number(a.totalPrice) || 0,
+        collectedAmount: getCollected(a),
+        type: isDeposit ? "Seña 50%" : "Pago Total 100%",
+      };
+    });
 
     return {
       totalIncome,
@@ -554,7 +678,8 @@ export async function getFinancialSummary() {
       monthResult,
       cashIncome,
       transferIncome,
-      appointmentsCount: completedApts.length,
+      appointmentsCount: incomeApts.length,
+      incomeBreakdown,
     };
   } catch (error) {
     console.error("Error calculando balance financiero:", error);
@@ -570,6 +695,7 @@ export async function getFinancialSummary() {
       cashIncome: 0,
       transferIncome: 0,
       appointmentsCount: 0,
+      incomeBreakdown: [],
     };
   }
 }
@@ -582,19 +708,26 @@ export async function updateAppointmentPayment(
   id: string,
   paymentStatus: StoredAppointment["paymentStatus"],
   paymentMethod?: StoredAppointment["paymentMethod"],
-  paymentReceipt?: string
+  paymentReceipt?: string,
+  status?: StoredAppointment["status"],
+  totalPrice?: number
 ) {
   try {
     const db = await getDatabase();
     const apt = db.appointments.find((a) => a.id === id);
     if (apt) {
       apt.paymentStatus = paymentStatus;
-      if (paymentMethod) apt.paymentMethod = paymentMethod;
+      if (paymentMethod) {
+        apt.paymentMethod = paymentMethod === ("CASH" as any) ? "EFECTIVO" : paymentMethod === ("TRANSFER" as any) ? "TRANSFERENCIA" : paymentMethod;
+      }
       if (paymentReceipt !== undefined) apt.paymentReceipt = paymentReceipt;
+      if (status !== undefined) apt.status = status;
+      if (totalPrice !== undefined) apt.totalPrice = Number(totalPrice);
       apt.updatedAt = new Date().toISOString();
       await saveDatabase(db);
       revalidatePath("/admin/dashboard");
       revalidatePath("/admin/finances");
+      revalidatePath("/admin/stats");
       return { success: true };
     }
     return { success: false, error: "Turno no encontrado" };

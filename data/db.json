@@ -39,104 +39,34 @@
     },
     {
       "id": "f5ec392f-52a6-4aae-8103-e844cee227ae",
-      "name": "Ana Martinez",
+      "name": "TATI",
       "phone": "03517718804",
       "category": "Nueva",
       "createdAt": "2026-09-15T20:57:14.463Z"
+    },
+    {
+      "id": "5001f109-32b8-4ce1-8c55-e720904d9799",
+      "name": "Sofia",
+      "phone": "3516611688",
+      "category": "Nueva",
+      "createdAt": "2026-09-17T01:42:40.921Z"
+    },
+    {
+      "id": "a4c86727-9b05-49a7-a538-3d4c556aa926",
+      "name": "NANY",
+      "phone": "3157718804",
+      "category": "Nueva",
+      "createdAt": "2026-09-17T17:33:57.732Z"
     }
   ],
-  "appointments": [
-    {
-      "id": "14b2cd05-00c7-4543-812f-ca3a71d09fa3",
-      "date": "2025-12-18T12:00:00.000Z",
-      "status": "COMPLETED",
-      "clientId": "8049a73c-99bf-441e-b539-febe51baa14b",
-      "createdAt": "2025-12-18T04:37:16.440Z",
-      "updatedAt": "2025-12-18T04:39:06.588Z",
-      "paymentMethod": "CASH"
-    },
-    {
-      "id": "72437b19-7027-4255-914a-493910dc018f",
-      "date": "2026-01-26T12:00:00.000Z",
-      "status": "COMPLETED",
-      "clientId": "8049a73c-99bf-441e-b539-febe51baa14b",
-      "createdAt": "2026-01-26T03:32:57.928Z",
-      "updatedAt": "2026-01-26T04:00:56.741Z",
-      "paymentMethod": "TRANSFER"
-    },
-    {
-      "id": "408d69ff-f6ea-4169-b510-2c231addb180",
-      "date": "2026-09-30",
-      "notes": "Solo queria decir que una uña se me rompio a los 2 dias de habermelas hecho",
-      "status": "CONFIRMED",
-      "endTime": "16:15",
-      "clientId": "89b097a3-b6b2-4c73-9c4a-fcb968741266",
-      "extraIds": [
-        "reparacion-una"
-      ],
-      "createdAt": "2026-09-15T20:44:00.186Z",
-      "serviceId": "soft-gel",
-      "startTime": "14:00",
-      "updatedAt": "2026-09-15T20:44:00.186Z",
-      "clientName": "Laza dir",
-      "extraNames": [
-        "Reparación de Uña Rota"
-      ],
-      "totalPrice": 20500,
-      "clientPhone": "3517718804",
-      "serviceName": "Soft Gel Tips",
-      "durationMinutes": 135
-    },
-    {
-      "id": "6b21d475-2e03-42d2-8cd5-89e4b850f334",
-      "date": "2026-09-16",
-      "notes": "",
-      "status": "CONFIRMED",
-      "endTime": "13:00",
-      "clientId": "f5ec392f-52a6-4aae-8103-e844cee227ae",
-      "extraIds": [
-        "cristales"
-      ],
-      "createdAt": "2026-09-15T20:57:14.464Z",
-      "serviceId": "belleza-manos",
-      "startTime": "12:00",
-      "updatedAt": "2026-09-15T20:57:14.464Z",
-      "clientName": "Ana Castellano",
-      "extraNames": [
-        "Cristalería & Strass"
-      ],
-      "totalPrice": 11500,
-      "clientPhone": "03517718804",
-      "serviceName": "Belleza de Manos Clásica",
-      "durationMinutes": 60
-    },
-    {
-      "id": "82f36a7d-5cd7-45da-a9e3-4c8dfe7cc812",
-      "date": "2026-09-17",
-      "notes": "",
-      "status": "CONFIRMED",
-      "endTime": "12:00",
-      "clientId": "f5ec392f-52a6-4aae-8103-e844cee227ae",
-      "extraIds": [],
-      "createdAt": "2026-09-15T21:06:17.900Z",
-      "serviceId": "kapping",
-      "startTime": "10:30",
-      "updatedAt": "2026-09-15T21:06:17.901Z",
-      "clientName": "Ana Martinez",
-      "extraNames": [],
-      "totalPrice": 15000,
-      "clientPhone": "03517718804",
-      "serviceName": "Kapping Gel",
-      "durationMinutes": 90
-    }
-  ],
+  "appointments": [],
   "blockedTimes": [
     {
-      "id": "20ab441a-ae51-42ed-9b9e-7019864b4d35",
-      "date": "2026-09-17",
-      "reason": "Trabajo",
-      "endTime": "18:30",
-      "startTime": "14:00"
+      "id": "f2e44c6e-847f-4a0c-8122-c5b87eb669c3",
+      "date": "2026-09-19",
+      "reason": "TRABAJO ",
+      "endTime": "15:00",
+      "startTime": "09:00"
     }
   ],
   "specialOpenings": [],
@@ -225,12 +155,13 @@
   "services": [
     {
       "id": "kapping",
+      "activo": true,
       "nombre": "Kapping Gel",
-      "categoria": "Manicura",
       "precio": 15000,
       "duracion": 90,
-      "mantenimientoDias": 21,
-      "descripcion": "Capa protectora de gel nivelador sobre tu uña natural para evitar quiebres y permitir un crecimiento sano y fuerte.",
+      "garantia": "5 días de garantía ante desprendimiento espontáneo sin golpe.",
+      "categoria": "Manicura",
+      "destacado": true,
       "imagenUrl": "https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80",
       "queIncluye": [
         "Manicuría combinada / rusa",
@@ -238,23 +169,23 @@
         "Esmaltado liso o french clásico",
         "Aceite nutritivo para cutículas"
       ],
+      "descripcion": "Capa protectora de gel nivelador sobre tu uña natural para evitar quiebres y permitir un crecimiento sano y fuerte.",
       "queNoIncluye": [
         "Extensión o alargamiento de largo",
         "Remoción de material colocado en otro estudio"
       ],
-      "garantia": "5 días de garantía ante desprendimiento espontáneo sin golpe.",
       "instrucciones": "Asistir con uñas limpias y sin restos de aceites para máxima adherencia.",
-      "activo": true,
-      "destacado": true
+      "mantenimientoDias": 21
     },
     {
       "id": "semipermanente",
+      "activo": true,
       "nombre": "Esmaltado Semipermanente",
-      "categoria": "Manicura",
       "precio": 12000,
       "duracion": 60,
-      "mantenimientoDias": 18,
-      "descripcion": "Cuidado delicado de cutículas, preparación sin dañar la lámina y esmaltado de alta duración con acabado brillante por hasta 3 semanas.",
+      "garantia": "3 días de garantía ante salto espontáneo.",
+      "categoria": "Manicura",
+      "destacado": false,
       "imagenUrl": "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
       "queIncluye": [
         "Limpieza profunda de cutículas",
@@ -262,23 +193,23 @@
         "Color a elección (hasta 2 tonos)",
         "Top coat ultra brillante"
       ],
+      "descripcion": "Cuidado delicado de cutículas, preparación sin dañar la lámina y esmaltado de alta duración con acabado brillante por hasta 3 semanas.",
       "queNoIncluye": [
         "Nivelación con gel pesado",
         "Extensión del largo natural"
       ],
-      "garantia": "3 días de garantía ante salto espontáneo.",
       "instrucciones": "Evitar agua muy caliente en las primeras 2 horas posteriores al esmaltado.",
-      "activo": true,
-      "destacado": false
+      "mantenimientoDias": 18
     },
     {
       "id": "softgel",
+      "activo": true,
       "nombre": "Soft Gel Tips",
-      "categoria": "Manicura",
       "precio": 19000,
       "duracion": 120,
-      "mantenimientoDias": 21,
-      "descripcion": "Extensiones completas elaboradas con gel ultra resistente y flexible. Alargan tus uñas con apariencia natural, liviana y estilizada.",
+      "garantia": "5 días de garantía ante desprendimiento.",
+      "categoria": "Manicura",
+      "destacado": false,
       "imagenUrl": "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80",
       "queIncluye": [
         "Preparación completa con fresas diamantadas",
@@ -286,22 +217,22 @@
         "Limado a forma deseada (Almond, Coffin, Cuadrada)",
         "Esmaltado semipermanente"
       ],
+      "descripcion": "Extensiones completas elaboradas con gel ultra resistente y flexible. Alargan tus uñas con apariencia natural, liviana y estilizada.",
       "queNoIncluye": [
         "Nail Art complejo (elegir en extras)"
       ],
-      "garantia": "5 días de garantía ante desprendimiento.",
       "instrucciones": "Si tienes acrílico previo, selecciona el extra de remoción.",
-      "activo": true,
-      "destacado": false
+      "mantenimientoDias": 21
     },
     {
       "id": "belleza-manos",
+      "activo": true,
       "nombre": "Belleza de Manos Clásica",
-      "categoria": "Manicura",
       "precio": 8500,
       "duracion": 45,
-      "mantenimientoDias": 14,
-      "descripcion": "Cuidado higiénico integral para manos prolijas, limpias e hidratadas. Ideal para un look sobrio, natural y saludable.",
+      "garantia": "Garantía de higiene y prolijidad en el momento del servicio.",
+      "categoria": "Manicura",
+      "destacado": false,
       "imagenUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
       "queIncluye": [
         "Tratamiento prolijo de cutículas",
@@ -309,68 +240,91 @@
         "Nutrición profunda con loción aromática",
         "Brillo protector o calcio fortalecedor"
       ],
+      "descripcion": "Cuidado higiénico integral para manos prolijas, limpias e hidratadas. Ideal para un look sobrio, natural y saludable.",
       "queNoIncluye": [
         "Esmaltado semipermanente o gel"
       ],
-      "garantia": "Garantía de higiene y prolijidad en el momento del servicio.",
       "instrucciones": "Sin preparación previa requerida.",
-      "activo": true,
-      "destacado": false
+      "mantenimientoDias": 14
     },
     {
       "id": "perfilado-cejas",
+      "activo": true,
       "nombre": "Perfilado & Diseño de Cejas",
-      "categoria": "Cejas",
       "precio": 7500,
-      "duracion": 40,
-      "mantenimientoDias": 20,
-      "descripcion": "Diseño personalizado según tu fisonomía facial con pinza y cera de baja temperatura para resaltar tu mirada de forma armoniosa.",
+      "duracion": 45,
+      "garantia": "Asesoría estética garantizada.",
+      "categoria": "Cejas",
+      "destacado": true,
       "imagenUrl": "https://images.unsplash.com/photo-1595475207225-428b62bda831?auto=format&fit=crop&w=800&q=80",
       "queIncluye": [
         "Visagismo facial y mapeo",
         "Depilación con cera suave / pinza",
         "Peinado y fijación con sérum"
       ],
+      "descripcion": "Diseño personalizado según tu fisonomía facial con pinza y cera de baja temperatura para resaltar tu mirada de forma armoniosa.",
       "queNoIncluye": [
         "Laminado químico"
       ],
-      "garantia": "Asesoría estética garantizada.",
       "instrucciones": "Evitar exfoliar la zona 24 horas antes.",
-      "activo": true,
-      "destacado": false
+      "mantenimientoDias": 20
     },
     {
       "id": "lifting-pestanas",
+      "activo": true,
       "nombre": "Lifting & Nutrición de Pestañas",
-      "categoria": "Pestañas",
       "precio": 14000,
       "duracion": 75,
-      "mantenimientoDias": 35,
-      "descripcion": "Curvatura natural desde la raíz y tinte profundo con baño de keratina que abre tu mirada sin necesidad de extensiones.",
+      "garantia": "Efecto visible de 4 a 6 semanas.",
+      "categoria": "Pestañas",
+      "destacado": false,
       "imagenUrl": "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=800&q=80",
       "queIncluye": [
         "Lifting con moldes de silicona anatómicos",
         "Tinte negro intenso",
         "Baño nutritivo de keratina y colágeno"
       ],
+      "descripcion": "Curvatura natural desde la raíz y tinte profundo con baño de keratina que abre tu mirada sin necesidad de extensiones.",
       "queNoIncluye": [
         "Extensiones pelo a pelo"
       ],
-      "garantia": "Efecto visible de 4 a 6 semanas.",
       "instrucciones": "Asistir sin rímel ni maquillaje en los ojos.",
-      "activo": true,
-      "destacado": false
+      "mantenimientoDias": 35
     }
   ],
   "expenses": [],
-  "promotions": [],
-  "vouchers": [],
+  "promotions": [
+    {
+      "id": "c7d35e2f-e9af-4bb3-91db-731fede0169b",
+      "activo": true,
+      "nombre": "MIA",
+      "fechaFin": "2026-10-02",
+      "createdAt": "2026-09-17T17:43:55.594Z",
+      "descripcion": "",
+      "fechaInicio": "2026-09-17",
+      "precioPromo": 30000,
+      "serviciosIds": [],
+      "descuentoPorcentaje": 30
+    }
+  ],
+  "vouchers": [
+    {
+      "de": "NOVIO",
+      "id": "c1ea3b1e-1ff5-4b35-94c4-4d05b971d6de",
+      "para": "LUNA",
+      "codigo": "AGAPE-1302",
+      "estado": "DISPONIBLE",
+      "createdAt": "2026-09-17T17:42:07.150Z",
+      "vencimiento": "2026-10-20",
+      "servicioONombre": "Kapping Gel + Esmaltado"
+    }
+  ],
   "templates": [
     {
       "id": "confirmacion",
       "tipo": "CONFIRMACION",
-      "titulo": "Confirmación de Turno",
       "texto": "Hola [nombre], te confirmamos tu turno en ÁGAPE STUDIO para el día [fecha] a las [hora] hs para [servicio]. Total: $[precio]. ¡Te esperamos con mucho amor! 💅✨",
+      "titulo": "Confirmación de Turno",
       "variables": [
         "[nombre]",
         "[fecha]",
@@ -382,8 +336,8 @@
     {
       "id": "recordatorio-24h",
       "tipo": "RECORDATORIO_24H",
-      "titulo": "Recordatorio 24 Horas Antes",
       "texto": "Hola [nombre], te recordamos que mañana tenés tu turno en ÁGAPE STUDIO a las [hora] hs para [servicio]. Por favor avisanos con anticipación si necesitas reprogramar. ¡Hasta mañana! 💖",
+      "titulo": "Recordatorio 24 Horas Antes",
       "variables": [
         "[nombre]",
         "[fecha]",
@@ -394,8 +348,8 @@
     {
       "id": "recordatorio-48h",
       "tipo": "RECORDATORIO_48H",
-      "titulo": "Recordatorio 48 Horas Antes",
       "texto": "Hola [nombre] ✨ Te recordamos que en 2 días tenés agendada tu cita en ÁGAPE STUDIO el día [fecha] a las [hora] hs para [servicio]. ¡Nos vemos pronto!",
+      "titulo": "Recordatorio 48 Horas Antes",
       "variables": [
         "[nombre]",
         "[fecha]",
@@ -406,8 +360,8 @@
     {
       "id": "cumpleanos",
       "tipo": "CUMPLEANOS",
-      "titulo": "Saludo de Cumpleaños",
       "texto": "¡Feliz cumple, [nombre]! 🎂💖 Desde ÁGAPE STUDIO queremos desearte un hermoso día. Tenemos un regalito especial para vos en tu próxima visita.",
+      "titulo": "Saludo de Cumpleaños",
       "variables": [
         "[nombre]"
       ]
@@ -415,8 +369,8 @@
     {
       "id": "recuperacion",
       "tipo": "RECUPERACION_INACTIVA",
-      "titulo": "Recuperación de Clienta Inactiva",
       "texto": "Hola [nombre] ✨ ¡Hace tiempo no te vemos por ÁGAPE STUDIO y extrañamos mimar tus uñas! ¿Te gustaría agendar un turno esta semana para renovar tu set? Te esperamos con un descuento especial.",
+      "titulo": "Recuperación de Clienta Inactiva",
       "variables": [
         "[nombre]"
       ]

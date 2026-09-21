@@ -16,11 +16,11 @@ export default function Navbar() {
   return (
     <>
       {/* Barra de navegación superior para Clientas (Desktop y Header Móvil) */}
-      <header className="sticky top-0 z-40 w-full bg-[#FFFFFF]/95 backdrop-blur-md border-b border-[#F5F0E6] shadow-xs">
+      <header className="sticky top-0 z-40 w-full bg-[#121212]/90 backdrop-blur-md border-b border-[#262626] shadow-md">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           {/* Logo / Nombre de marca */}
           <Link href="/" className="flex flex-col items-start group">
-            <span className="font-cinzel text-xl sm:text-2xl font-semibold tracking-widest text-[#2B2B2B] group-hover:text-[#D4AF37] transition-colors">
+            <span className="font-cinzel text-xl sm:text-2xl font-semibold tracking-widest text-[#FFFFFF] group-hover:text-[#D4AF37] transition-colors">
               ÁGAPE STUDIO
             </span>
             <span className="text-[10px] sm:text-xs uppercase tracking-wider text-[#D4AF37] font-medium -mt-1">
@@ -33,7 +33,7 @@ export default function Navbar() {
             <Link
               href="/"
               className={`transition-colors hover:text-[#D4AF37] ${
-                pathname === "/" ? "text-[#D4AF37] font-semibold" : "text-[#2B2B2B]"
+                pathname === "/" ? "text-[#D4AF37] font-semibold" : "text-[#D1D1D1]"
               }`}
             >
               Inicio
@@ -41,16 +41,16 @@ export default function Navbar() {
             <Link
               href="/servicios"
               className={`transition-colors hover:text-[#D4AF37] ${
-                pathname === "/servicios" ? "text-[#D4AF37] font-semibold" : "text-[#2B2B2B]"
+                pathname === "/servicios" ? "text-[#D4AF37] font-semibold" : "text-[#D1D1D1]"
               }`}
             >
               Servicios
             </Link>
             <Link
               href="/book"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#2B2B2B] text-[#FFFFFF] hover:bg-[#D4AF37] hover:text-[#2B2B2B] transition-all shadow-sm text-xs font-semibold uppercase tracking-wider"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#D4AF37] text-[#121212] hover:bg-[#FFFFFF] hover:text-[#121212] transition-all shadow-md text-xs font-bold uppercase tracking-wider cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#121212]" />
               <span>Reservar Turno</span>
             </Link>
           </nav>
@@ -58,7 +58,7 @@ export default function Navbar() {
       </header>
 
       {/* Barra de navegación inferior fija para celular (Solo vista clienta) */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#FFFFFF]/98 backdrop-blur-md border-t border-[#F5F0E6] shadow-lg pb-safe">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#121212]/95 backdrop-blur-md border-t border-[#262626] shadow-2xl pb-safe">
         <div className="grid grid-cols-3 h-16 items-center px-4">
           {navLinks.map((item) => {
             const Icon = item.icon;
@@ -71,10 +71,10 @@ export default function Navbar() {
                   href={item.href}
                   className="flex flex-col items-center justify-center -mt-4"
                 >
-                  <div className="w-12 h-12 rounded-full bg-[#2B2B2B] text-[#FFFFFF] flex items-center justify-center shadow-md border-2 border-[#D4AF37] hover:scale-105 transition-transform">
-                    <Icon className="w-5 h-5 text-[#D4AF37]" />
+                  <div className="w-12 h-12 rounded-full bg-[#D4AF37] text-[#121212] flex items-center justify-center shadow-lg border-2 border-[#121212] hover:scale-105 transition-transform">
+                    <Icon className="w-5 h-5 text-[#121212]" />
                   </div>
-                  <span className="text-[11px] font-semibold text-[#2B2B2B] mt-1">
+                  <span className="text-[11px] font-semibold text-[#E5E5E5] mt-1">
                     {item.label}
                   </span>
                 </Link>
@@ -86,7 +86,7 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center justify-center py-1 transition-colors ${
-                  isActive ? "text-[#D4AF37] font-semibold" : "text-[#737373] hover:text-[#2B2B2B]"
+                  isActive ? "text-[#D4AF37] font-semibold" : "text-[#888888] hover:text-[#FFFFFF]"
                 }`}
               >
                 <Icon className="w-5 h-5 mb-0.5" />

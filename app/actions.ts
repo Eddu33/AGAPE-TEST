@@ -16,6 +16,7 @@ import {
 
 import { SERVICIOS_AGAPE, EXTRAS_AGAPE } from "@/lib/services";
 import { randomUUID } from "crypto";
+import { revalidatePath } from "next/cache";
 
 /**
  * Obtiene la disponibilidad horaria calculada para un día y duración determinados
@@ -163,7 +164,10 @@ export async function bookAgapeAppointment(data: {
     };
 
     db.appointments.push(newAppointment);
-    saveDatabase(db);
+    await saveDatabase(db);
+    revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/finances");
+    revalidatePath("/admin/stats");
 
     return { success: true, appointmentId };
   } catch (error: any) {

@@ -53,7 +53,7 @@ export default function StatsPage() {
       : 0;
 
   return (
-    <main className="min-h-screen bg-[#FAF8F5] text-charcoal flex flex-col pb-16">
+    <main className="min-h-screen bg-transparent text-charcoal flex flex-col pb-16">
       <AdminNavbar />
 
       <div className="container mx-auto px-4 max-w-5xl py-8 space-y-8">

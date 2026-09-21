@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AdminNavbar from "@/components/AdminNavbar";
 import {
   Gift,
   Plus,
@@ -164,7 +165,9 @@ export default function AdminPromotionsPage() {
   };
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="flex flex-col min-h-screen bg-transparent">
+      <AdminNavbar />
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 pb-24 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#FFFFFF] p-6 rounded-2xl border border-[#EAE0D5] shadow-xs">
         <div>
@@ -683,6 +686,7 @@ export default function AdminPromotionsPage() {
           </div>
         </div>
       )}
+      </main>
     </div>
   );
 }
