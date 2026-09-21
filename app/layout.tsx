@@ -33,11 +33,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="dark">
+    <html lang="es" className="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var theme = localStorage.getItem('theme');
+                if (theme === 'light') {
+                  document.documentElement.classList.remove('dark');
+                } else {
+                  document.documentElement.classList.add('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body
-        className={`${cinzel.variable} ${montserrat.variable} antialiased min-h-screen flex flex-col bg-[#0D0D0D] text-[#F5F5F5] selection:bg-[#D4AF37] selection:text-[#0D0D0D] relative`}
+        className={`${cinzel.variable} ${montserrat.variable} antialiased min-h-screen flex flex-col bg-[#FAF8F5] text-[#171717] dark:bg-[#0D0D0D] dark:text-[#F5F5F5] selection:bg-[#D4AF37] selection:text-[#0D0D0D] relative transition-colors duration-200`}
       >
-        <div className="relative z-10 flex flex-col min-h-screen bg-[#0D0D0D]">
+        <div className="relative z-10 flex flex-col min-h-screen bg-[#FAF8F5] dark:bg-[#0D0D0D] transition-colors duration-200">
           {children}
         </div>
       </body>

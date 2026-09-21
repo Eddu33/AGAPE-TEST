@@ -14,14 +14,14 @@ export default async function Home() {
       : allServices.slice(0, 3);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0D0D0D]">
+    <div className="flex flex-col min-h-screen bg-[#FAF8F5] dark:bg-[#0D0D0D] transition-colors duration-200">
       <Navbar />
 
       {/* PRIMERA SECCIÓN: SOLO EL BACKGROUND (Se desvanece al escrolear) */}
       <HeroCover />
 
-      {/* SECCIÓN DE INFORMACIÓN: Con fondo oscuro sólido para legibilidad perfecta */}
-      <div id="informacion" className="relative z-10 bg-[#0D0D0D]">
+      {/* SECCIÓN DE INFORMACIÓN: Con fondo adaptativo para legibilidad perfecta */}
+      <div id="informacion" className="relative z-10 bg-[#FAF8F5] dark:bg-[#0D0D0D] transition-colors duration-200">
         {/* HERO CONTENT / INFORMACIÓN PRINCIPAL */}
         <section className="relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-28 border-b border-[#262626]/80">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">

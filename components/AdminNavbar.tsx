@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ShieldCheck,
 } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function AdminNavbar() {
   const pathname = usePathname();
@@ -97,7 +98,7 @@ export default function AdminNavbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#242424] text-[#FFFFFF] border-b border-[#3D3D3D] shadow-lg">
+    <header className="sticky top-0 z-50 w-full bg-[#242424] text-[#FFFFFF] border-b border-[#3D3D3D] shadow-lg transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         {/* Logo y título administrativo */}
         <Link href="/admin/dashboard" className="flex items-center gap-3 group">
@@ -117,27 +118,30 @@ export default function AdminNavbar() {
           </div>
         </Link>
 
-        {/* Botón Estilo Hamburguesa Desplegable */}
-        <div className="relative" ref={menuRef}>
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border transition-all cursor-pointer select-none shadow-xs ${
-              isOpen
-                ? "bg-[#D4AF37] text-[#242424] border-[#D4AF37] font-bold shadow-md"
-                : "bg-[#2E2E2E] text-[#FFFFFF] border-[#4A4A4A] hover:border-[#D4AF37] hover:bg-[#383838]"
-            }`}
-            aria-expanded={isOpen}
-            aria-label="Abrir menú de administración"
-          >
-            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5 text-[#D4AF37]" />}
-            <span className="text-xs font-semibold tracking-wide font-montserrat">
-              {isOpen ? "Cerrar" : "Módulos"}
-            </span>
-          </button>
+        {/* Acciones de Cabecera: Selector de Tema + Botón Hamburguesa */}
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
 
-          {/* Bloque Desplegable Hamburguesa */}
-          {isOpen && (
-            <div className="absolute right-0 mt-3 w-[340px] sm:w-[420px] max-w-[92vw] bg-[#1E1E1E] border border-[#444444] rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200 z-50">
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border transition-all cursor-pointer select-none shadow-xs ${
+                isOpen
+                  ? "bg-[#D4AF37] text-[#242424] border-[#D4AF37] font-bold shadow-md"
+                  : "bg-[#2E2E2E] text-[#FFFFFF] border-[#4A4A4A] hover:border-[#D4AF37] hover:bg-[#383838]"
+              }`}
+              aria-expanded={isOpen}
+              aria-label="Abrir menú de administración"
+            >
+              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5 text-[#D4AF37]" />}
+              <span className="text-xs font-semibold tracking-wide font-montserrat">
+                {isOpen ? "Cerrar" : "Módulos"}
+              </span>
+            </button>
+
+            {/* Bloque Desplegable Hamburguesa */}
+            {isOpen && (
+              <div className="absolute right-0 mt-3 w-[340px] sm:w-[420px] max-w-[92vw] bg-[#1E1E1E] border border-[#444444] rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200 z-50">
               {/* Encabezado del bloque */}
               <div className="p-4 bg-linear-to-r from-[#2B2B2B] to-[#1E1E1E] border-b border-[#333333] flex items-center justify-between">
                 <div>
@@ -223,8 +227,10 @@ export default function AdminNavbar() {
                 </div>
               </div>
 
-              {/* Pie del bloque con Botón de Cerrar Sesión dentro del bloque */}
-              <div className="p-3 bg-[#171717] border-t border-[#333333]">
+              {/* Pie del bloque con Selector de Tema y Botón de Cerrar Sesión */}
+              <div className="p-3 bg-[#171717] border-t border-[#333333] space-y-2">
+                <ThemeToggle variant="full" />
+
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-red-950/40 hover:bg-red-900/60 border border-red-500/30 text-red-300 hover:text-red-100 text-xs font-semibold transition-all cursor-pointer shadow-xs"
@@ -236,6 +242,7 @@ export default function AdminNavbar() {
             </div>
           )}
         </div>
+      </div>
       </div>
     </header>
   );

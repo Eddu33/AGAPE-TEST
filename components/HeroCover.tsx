@@ -34,7 +34,7 @@ export default function HeroCover() {
   };
 
   return (
-    <section className="relative w-full h-[calc(100dvh-64px)] min-h-[520px] flex flex-col justify-between items-center overflow-hidden select-none bg-[#0A0A0A]">
+    <section className="relative w-full h-[calc(100dvh-64px)] min-h-[520px] flex flex-col justify-between items-center overflow-hidden select-none bg-[#FAF8F5] dark:bg-[#0A0A0A] transition-colors duration-200">
       {/* Contenedor del fondo con desvanecimiento dinámico al hacer scroll */}
       <div
         className="absolute inset-0 pointer-events-none transition-opacity duration-100 ease-out"
@@ -54,8 +54,8 @@ export default function HeroCover() {
           />
         </div>
 
-        {/* Viñeta sutil para fundir suavemente los bordes con el fondo negro */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A]/40 via-transparent to-[#0A0A0A]" />
+        {/* Viñeta sutil para fundir suavemente los bordes con el fondo */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#FAF8F5]/30 via-transparent to-[#FAF8F5] dark:from-[#0A0A0A]/40 dark:via-transparent dark:to-[#0A0A0A]" />
       </div>
 
       {/* Espacio superior para balancear el contenido */}
@@ -65,15 +65,15 @@ export default function HeroCover() {
       <button
         type="button"
         onClick={scrollToInfo}
-        className="relative z-10 mb-8 sm:mb-12 flex flex-col items-center gap-2 text-[#D4AF37] hover:text-[#FFFFFF] transition-all cursor-pointer group animate-bounce focus:outline-none"
+        className="relative z-10 mb-8 sm:mb-12 flex flex-col items-center gap-2 text-[#B38E22] dark:text-[#D4AF37] hover:text-[#171717] dark:hover:text-[#FFFFFF] transition-all cursor-pointer group animate-bounce focus:outline-none"
         style={{ opacity: Math.max(0.3, opacity) }}
         aria-label="Deslizar para ver la información"
       >
-        <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.25em] text-[#D4AF37] group-hover:text-[#FFFFFF] transition-colors drop-shadow-md">
+        <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.25em] text-[#B38E22] dark:text-[#D4AF37] group-hover:text-[#171717] dark:group-hover:text-[#FFFFFF] transition-colors drop-shadow-md">
           Desliza para ver más
         </span>
-        <div className="w-8 h-8 rounded-full border border-[#D4AF37]/50 flex items-center justify-center group-hover:border-[#FFFFFF] transition-colors bg-[#0D0D0D]/60 backdrop-blur-sm">
-          <ChevronDown className="w-4 h-4 text-[#D4AF37] group-hover:text-[#FFFFFF] transition-colors" />
+        <div className="w-8 h-8 rounded-full border border-[#B38E22]/50 dark:border-[#D4AF37]/50 flex items-center justify-center group-hover:border-[#171717] dark:group-hover:border-[#FFFFFF] transition-colors bg-[#FFFFFF]/70 dark:bg-[#0D0D0D]/60 backdrop-blur-sm shadow-sm">
+          <ChevronDown className="w-4 h-4 text-[#B38E22] dark:text-[#D4AF37] group-hover:text-[#171717] dark:group-hover:text-[#FFFFFF] transition-colors" />
         </div>
       </button>
     </section>

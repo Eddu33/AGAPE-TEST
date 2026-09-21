@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Sparkles, Calendar, Home, Layers } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -16,7 +17,7 @@ export default function Navbar() {
   return (
     <>
       {/* Barra de navegación superior para Clientas (Desktop y Header Móvil) */}
-      <header className="sticky top-0 z-40 w-full bg-[#121212]/90 backdrop-blur-md border-b border-[#262626] shadow-md">
+      <header className="sticky top-0 z-40 w-full bg-[#121212]/90 backdrop-blur-md border-b border-[#262626] shadow-md transition-colors duration-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           {/* Logo / Nombre de marca */}
           <Link href="/" className="flex flex-col items-start group">
@@ -28,32 +29,36 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Enlaces de escritorio exclusivos para la clienta */}
-          <nav className="hidden sm:flex items-center gap-8 text-sm font-medium">
-            <Link
-              href="/"
-              className={`transition-colors hover:text-[#D4AF37] ${
-                pathname === "/" ? "text-[#D4AF37] font-semibold" : "text-[#D1D1D1]"
-              }`}
-            >
-              Inicio
-            </Link>
-            <Link
-              href="/servicios"
-              className={`transition-colors hover:text-[#D4AF37] ${
-                pathname === "/servicios" ? "text-[#D4AF37] font-semibold" : "text-[#D1D1D1]"
-              }`}
-            >
-              Servicios
-            </Link>
-            <Link
-              href="/book"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#D4AF37] text-[#121212] hover:bg-[#FFFFFF] hover:text-[#121212] transition-all shadow-md text-xs font-bold uppercase tracking-wider cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#121212]" />
-              <span>Reservar Turno</span>
-            </Link>
-          </nav>
+          {/* Enlaces y selector de tema */}
+          <div className="flex items-center gap-3 sm:gap-6">
+            <nav className="hidden sm:flex items-center gap-8 text-sm font-medium">
+              <Link
+                href="/"
+                className={`transition-colors hover:text-[#D4AF37] ${
+                  pathname === "/" ? "text-[#D4AF37] font-semibold" : "text-[#D1D1D1]"
+                }`}
+              >
+                Inicio
+              </Link>
+              <Link
+                href="/servicios"
+                className={`transition-colors hover:text-[#D4AF37] ${
+                  pathname === "/servicios" ? "text-[#D4AF37] font-semibold" : "text-[#D1D1D1]"
+                }`}
+              >
+                Servicios
+              </Link>
+              <Link
+                href="/book"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#D4AF37] text-[#121212] hover:bg-[#FFFFFF] hover:text-[#121212] transition-all shadow-md text-xs font-bold uppercase tracking-wider cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#121212]" />
+                <span>Reservar Turno</span>
+              </Link>
+            </nav>
+
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
