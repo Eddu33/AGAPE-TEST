@@ -976,6 +976,18 @@ export async function updateVoucherStatus(id: string, estado: Voucher["estado"])
   }
 }
 
+export async function deleteAdminVoucher(id: string) {
+  try {
+    const db = await getDatabase();
+    db.vouchers = (db.vouchers || []).filter((v) => v.id !== id);
+    await saveDatabase(db);
+    revalidatePath("/admin/promotions");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 // ==========================================
 // 6. PLANTILLAS DE MENSAJES DE WHATSAPP
 // ==========================================
