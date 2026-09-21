@@ -234,17 +234,18 @@ export async function bookAppointment(data: {
 }
 
 export async function getStudioSettings() {
+  const envPhone = (process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER || process.env.WHATSAPP_PHONE_NUMBER || "").replace(/\D/g, "");
   try {
     const db = await getDatabase();
-    return db.settings || {
-      studioName: "ÁGAPE STUDIO",
-      whatsappPhone: "5493515580382",
-      depositPolicy: "Tolerancia máxima de 15 minutos de espera.",
+    return {
+      studioName: db.settings?.studioName || "ÁGAPE STUDIO",
+      whatsappPhone: envPhone || db.settings?.whatsappPhone || "",
+      depositPolicy: db.settings?.depositPolicy || "Tolerancia máxima de 15 minutos de espera.",
     };
   } catch {
     return {
       studioName: "ÁGAPE STUDIO",
-      whatsappPhone: "5493515580382",
+      whatsappPhone: envPhone || "",
       depositPolicy: "Tolerancia máxima de 15 minutos de espera.",
     };
   }

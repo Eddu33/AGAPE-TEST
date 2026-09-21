@@ -1383,7 +1383,7 @@ export default function AdminDashboardPage() {
                     <input
                       type="tel"
                       required
-                      placeholder="Ej: 3515580382"
+                      placeholder="Ej: 3511234567"
                       value={manualPhone}
                       onChange={(e) => setManualPhone(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl border border-[#DCC5A3]/60 bg-[#FAF8F5]"

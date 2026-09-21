@@ -29,7 +29,9 @@ function ConfirmationContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const [appointment, setAppointment] = useState<StoredAppointment | null>(null);
-  const [studioPhone, setStudioPhone] = useState("5493515580382");
+  const [studioPhone, setStudioPhone] = useState(
+    (process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER || "").replace(/\D/g, "")
+  );
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
@@ -118,7 +120,11 @@ function ConfirmationContent() {
       ? ` (Extras: ${appointment.extraNames.join(", ")})`
       : "";
 
-  const cleanPhone = (studioPhone || "5493515580382").replace(/\D/g, "");
+  const cleanPhone = (
+    studioPhone ||
+    process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER ||
+    ""
+  ).replace(/\D/g, "");
 
 
   const rawMessage = [

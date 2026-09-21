@@ -314,7 +314,7 @@ export const INITIAL_TEMPLATES: MessageTemplate[] = [
 
 const DEFAULT_SETTINGS: StudioSettings = {
   studioName: "ÁGAPE STUDIO",
-  whatsappPhone: "5493515580382",
+  whatsappPhone: (process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER || process.env.WHATSAPP_PHONE_NUMBER || "").replace(/\D/g, ""),
   depositPolicy: "Tolerancia máxima de 15 minutos de espera. Para confirmar el turno se solicita una seña del 50%.",
 };
 

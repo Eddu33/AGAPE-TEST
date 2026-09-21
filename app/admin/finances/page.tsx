@@ -1192,7 +1192,7 @@ export default function AdminFinancesPage() {
                     </label>
                     <input
                       type="tel"
-                      placeholder="Ej: 3515580382"
+                      placeholder="Ej: 3511234567"
                       value={newClientPhone}
                       onChange={(e) => setNewClientPhone(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl border border-[#DCC5A3]/60 bg-[#FAF8F5]"
