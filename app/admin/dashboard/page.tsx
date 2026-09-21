@@ -662,7 +662,7 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0E0E0E] text-white">
+    <div className="flex flex-col min-h-screen bg-transparent">
       <AdminNavbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
