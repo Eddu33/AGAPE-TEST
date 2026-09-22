@@ -408,13 +408,32 @@ export default function AdminClientsPage() {
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => openWhatsApp(c.phone, bMsg)}
-                        className="mt-4 w-full py-2.5 px-4 rounded-full bg-emerald-600 text-[#FFFFFF] text-xs font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                        <span>Enviar Saludo por WhatsApp</span>
-                      </button>
+                      <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleOpenEditModal(c)}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-[#2B2B2B] hover:text-[#D4AF37] transition-colors cursor-pointer"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                            <span>Editar</span>
+                          </button>
+                          <button
+                            onClick={() => setClientToDelete(c)}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-rose-500 hover:text-rose-700 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Borrar</span>
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={() => openWhatsApp(c.phone, bMsg)}
+                          className="py-2.5 px-4 rounded-full bg-emerald-600 text-[#FFFFFF] text-xs font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          <span>Enviar Saludo</span>
+                        </button>
+                      </div>
                     </div>
                   );
                 })
@@ -497,13 +516,32 @@ export default function AdminClientsPage() {
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => openWhatsApp(c.phone, winbackMsg)}
-                        className="mt-4 w-full py-2.5 px-4 rounded-full bg-[#2B2B2B] text-[#FFFFFF] text-xs font-semibold hover:bg-[#D4AF37] hover:text-[#2B2B2B] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-                      >
-                        <MessageCircle className="w-4 h-4 text-[#25D366]" />
-                        <span>Invitar a Volver por WhatsApp</span>
-                      </button>
+                      <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleOpenEditModal(c)}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-[#2B2B2B] hover:text-[#D4AF37] transition-colors cursor-pointer"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                            <span>Editar</span>
+                          </button>
+                          <button
+                            onClick={() => setClientToDelete(c)}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-rose-500 hover:text-rose-700 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Borrar</span>
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={() => openWhatsApp(c.phone, winbackMsg)}
+                          className="py-2.5 px-4 rounded-full bg-[#2B2B2B] text-[#FFFFFF] text-xs font-semibold hover:bg-[#D4AF37] hover:text-[#2B2B2B] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                        >
+                          <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                          <span>Invitar</span>
+                        </button>
+                      </div>
                     </div>
                   );
                 })

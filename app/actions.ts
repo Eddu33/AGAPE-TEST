@@ -1,22 +1,25 @@
 "use server";
 
+import { PrismaClient } from "@prisma/client";
 import {
   calculateAvailableSlots,
   formatDateKey,
   timeStringToMinutes,
   TimeInterval,
   SlotAvailability,
+  DaySchedule,
+  SpecialOpening,
+  BlockedTime,
 } from "@/lib/availability";
 import {
-  getDatabaseAsync as getDatabase,
-  saveDatabaseAsync as saveDatabase,
+  INITIAL_SERVICES,
   StoredAppointment,
-  StoredClient,
 } from "@/lib/db";
-
 import { SERVICIOS_AGAPE, EXTRAS_AGAPE } from "@/lib/services";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
+
+const prisma = new PrismaClient();
 
 /**
  * Obtiene la disponibilidad horaria calculada para un día y duración determinados
@@ -35,15 +38,20 @@ export async function getCalculatedAvailability(
     const [year, month, day] = dateString.split("-").map(Number);
     const targetDate = new Date(year, month - 1, day);
 
-    const db = await getDatabase();
+    // Consultar paralelamente a Prisma
+    const [dayAppointments, blockedTimes, specialOpenings, weeklySchedule] = await Promise.all([
+      prisma.appointment.findMany({
+        where: {
+          date: dateString,
+          status: { not: "CANCELLED" },
+        },
+      }),
+      prisma.blockedTime.findMany(),
+      prisma.specialOpening.findMany(),
+      prisma.daySchedule.findMany(),
+    ]);
 
-    // 1. Filtrar turnos activos para esa fecha
-
-    const dayAppointments = db.appointments.filter(
-      (apt) => apt.date === dateString && apt.status !== "CANCELLED"
-    );
-
-    // 2. Convertir los turnos a intervalos ocupados en minutos
+    // Convertir los turnos a intervalos ocupados en minutos
     const busyIntervals: TimeInterval[] = dayAppointments.map((apt) => ({
       startMinutes: timeStringToMinutes(apt.startTime),
       endMinutes: timeStringToMinutes(apt.endTime),
@@ -51,14 +59,29 @@ export async function getCalculatedAvailability(
       title: `${apt.serviceName} (${apt.clientName})`,
     }));
 
-    // 3. Ejecutar el motor de disponibilidad matemática
+    // Convertir DaySchedule a array compatible con lib/availability
+    const DAYS_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const formattedSchedule = weeklySchedule.map((ws) => ({
+      dayOfWeek: ws.dayOfWeek,
+      nombreDia: DAYS_NAMES[ws.dayOfWeek] || "Desconocido",
+      isWorkingDay: ws.isOpen,
+      hours: {
+        open: ws.openTime || "09:00",
+        close: ws.closeTime || "18:00",
+        hasBreak: !!(ws.breakStart && ws.breakEnd),
+        breakStart: ws.breakStart || undefined,
+        breakEnd: ws.breakEnd || undefined,
+      }
+    }));
+
+    // Ejecutar el motor de disponibilidad matemática
     const slots = calculateAvailableSlots({
       date: targetDate,
       totalDurationMinutes,
       busyIntervals,
-      blockedTimes: db.blockedTimes,
-      specialOpenings: db.specialOpenings,
-      weeklySchedule: db.weeklySchedule,
+      blockedTimes: blockedTimes.map(b => ({ ...b, reason: b.reason || "" })),
+      specialOpenings: specialOpenings.map(s => ({ ...s, reason: s.reason || "", open: s.startTime, close: s.endTime })),
+      weeklySchedule: formattedSchedule,
       slotStepMinutes: 30,
     });
 
@@ -91,13 +114,35 @@ export async function bookAgapeAppointment(data: {
   notes?: string;
 }): Promise<{ success: boolean; appointmentId?: string; error?: string }> {
   try {
-    const db = await getDatabase();
-
-    // 1. Buscar servicio principal (dinámico o fallback)
-    const allServices = db.services && db.services.length > 0 ? db.services : SERVICIOS_AGAPE;
-    const service = allServices.find((s) => s.id === data.serviceId);
-    if (!service) {
-      return { success: false, error: "El servicio seleccionado no existe o no está activo." };
+    // 1. Buscar servicio principal
+    const service = await prisma.dynamicService.findUnique({
+      where: { id: data.serviceId },
+    });
+    
+    // Fallback si no está en Prisma (por ejemplo, kapping antiguo o recien creado sin migrar todo)
+    let finalService = service;
+    if (!finalService) {
+      const fallback = SERVICIOS_AGAPE.find((s) => s.id === data.serviceId);
+      if (fallback) {
+        finalService = {
+          id: fallback.id,
+          nombre: fallback.nombre,
+          categoria: fallback.categoria,
+          precio: fallback.precio,
+          duracion: fallback.duracion,
+          mantenimientoDias: fallback.mantenimientoDias,
+          descripcion: fallback.descripcion || "",
+          imagenUrl: fallback.imagenUrl || null,
+          queIncluye: fallback.queIncluye,
+          queNoIncluye: fallback.queNoIncluye,
+          garantia: fallback.garantia || null,
+          instrucciones: fallback.instrucciones || null,
+          activo: fallback.activo,
+          destacado: fallback.destacado ?? false,
+        };
+      } else {
+        return { success: false, error: "El servicio seleccionado no existe o no está activo." };
+      }
     }
 
     // 2. Buscar extras
@@ -105,8 +150,8 @@ export async function bookAgapeAppointment(data: {
     const extrasDuration = extras.reduce((acc, curr) => acc + curr.duracion, 0);
     const extrasPrice = extras.reduce((acc, curr) => acc + curr.precio, 0);
 
-    const totalDuration = service.duracion + extrasDuration;
-    const totalPrice = service.precio + extrasPrice;
+    const totalDuration = finalService.duracion + extrasDuration;
+    const totalPrice = finalService.precio + extrasPrice;
 
     // Calcular hora de fin
     const startMinutes = timeStringToMinutes(data.startTime);
@@ -127,47 +172,54 @@ export async function bookAgapeAppointment(data: {
     }
 
     // 4. Buscar o crear clienta
-    let client = db.clients.find((c) => c.phone.trim() === data.phone.trim());
+    let client = await prisma.client.findFirst({
+      where: { phone: data.phone.trim() },
+    });
+    
     if (!client) {
-      client = {
-        id: randomUUID(),
-        name: data.name.trim(),
-        phone: data.phone.trim(),
-        category: "Nueva",
-        createdAt: new Date().toISOString(),
-      };
-      db.clients.push(client);
+      client = await prisma.client.create({
+        data: {
+          name: data.name.trim(),
+          phone: data.phone.trim(),
+          category: "Nueva",
+        },
+      });
     } else {
-      client.name = data.name.trim();
+      // Actualizar nombre si cambió
+      if (client.name !== data.name.trim()) {
+        client = await prisma.client.update({
+          where: { id: client.id },
+          data: { name: data.name.trim() },
+        });
+      }
     }
 
     // 5. Crear el turno
     const appointmentId = randomUUID();
-    const newAppointment: StoredAppointment = {
-      id: appointmentId,
-      clientId: client.id,
-      clientName: client.name,
-      clientPhone: client.phone,
-      serviceId: service.id,
-      serviceName: service.nombre,
-      extraIds: extras.map((e) => e.id),
-      extraNames: extras.map((e) => e.nombre),
-      date: data.date,
-      startTime: data.startTime,
-      endTime,
-      durationMinutes: totalDuration,
-      totalPrice,
-      status: "CONFIRMED",
-      notes: data.notes,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    await prisma.appointment.create({
+      data: {
+        id: appointmentId,
+        clientId: client.id,
+        clientName: client.name,
+        clientPhone: client.phone,
+        serviceId: finalService.id,
+        serviceName: finalService.nombre,
+        extraIds: extras.map((e) => e.id),
+        extraNames: extras.map((e) => e.nombre),
+        date: data.date,
+        startTime: data.startTime,
+        endTime,
+        durationMinutes: totalDuration,
+        totalPrice,
+        status: "CONFIRMED",
+        notes: data.notes,
+      },
+    });
 
-    db.appointments.push(newAppointment);
-    await saveDatabase(db);
     revalidatePath("/admin/dashboard");
     revalidatePath("/admin/finances");
     revalidatePath("/admin/stats");
+    revalidatePath("/admin/clients");
 
     return { success: true, appointmentId };
   } catch (error: any) {
@@ -179,19 +231,35 @@ export async function bookAgapeAppointment(data: {
 /**
  * Obtiene los detalles de un turno por su ID
  */
-export async function getAgapeAppointmentById(id: string): Promise<StoredAppointment | null> {
+export async function getAppointment(id: string): Promise<StoredAppointment | null> {
   try {
-    const db = await getDatabase();
-    const appointment = db.appointments.find((a) => a.id === id);
-    return appointment || null;
+    const apt = await prisma.appointment.findUnique({
+      where: { id },
+      include: { client: true },
+    });
+    if (!apt) return null;
+    return {
+      ...apt,
+      status: apt.status as StoredAppointment["status"],
+      paymentStatus: apt.paymentStatus as StoredAppointment["paymentStatus"],
+      paymentMethod: (apt.paymentMethod as StoredAppointment["paymentMethod"]) || undefined,
+      paymentReceipt: apt.paymentReceipt || undefined,
+      notes: apt.notes || undefined,
+      totalPrice: Number(apt.totalPrice),
+      createdAt: apt.createdAt.toISOString(),
+      updatedAt: apt.updatedAt.toISOString(),
+      clientName: apt.clientName || apt.client?.name || "Clienta",
+      clientPhone: apt.clientPhone || apt.client?.phone || "",
+    };
   } catch (error) {
-    console.error("Error al buscar turno:", error);
+    console.error("Error al obtener turno:", error);
     return null;
   }
 }
 
 // Alias de compatibilidad para evitar roturas
-export const getAppointmentById = getAgapeAppointmentById;
+export const getAgapeAppointmentById = getAppointment;
+export const getAppointmentById = getAppointment;
 
 export async function getAvailability(date: Date): Promise<Record<string, number>> {
   try {
@@ -236,33 +304,41 @@ export async function bookAppointment(data: {
 export async function getStudioSettings() {
   const envPhone = (process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER || process.env.WHATSAPP_PHONE_NUMBER || "").replace(/\D/g, "");
   try {
-    const db = await getDatabase();
-    return {
-      studioName: db.settings?.studioName || "ÁGAPE STUDIO",
-      whatsappPhone: envPhone || db.settings?.whatsappPhone || "",
-      depositPolicy: db.settings?.depositPolicy || "Tolerancia máxima de 15 minutos de espera.",
-    };
-  } catch {
-    return {
-      studioName: "ÁGAPE STUDIO",
-      whatsappPhone: envPhone || "",
-      depositPolicy: "Tolerancia máxima de 15 minutos de espera.",
-    };
+    const settings = await prisma.studioSettings.findFirst();
+    if (settings) {
+      return {
+        studioName: settings.studioName || "ÁGAPE STUDIO",
+        whatsappPhone: envPhone || settings.whatsappPhone || "",
+        depositPolicy: settings.depositPolicy || "Tolerancia máxima de 15 minutos de espera.",
+      };
+    }
+  } catch (e) {
+    console.error(e);
   }
+  return {
+    studioName: "ÁGAPE STUDIO",
+    whatsappPhone: envPhone || "",
+    depositPolicy: "Tolerancia máxima de 15 minutos de espera.",
+  };
 }
-
 
 export async function updateStudioSettings(data: { whatsappPhone: string }) {
   try {
-    const db = await getDatabase();
-    db.settings = {
-      ...(db.settings || {
-        studioName: "ÁGAPE STUDIO",
-        depositPolicy: "Tolerancia máxima de 15 minutos de espera.",
-      }),
-      whatsappPhone: data.whatsappPhone.trim(),
-    };
-    await saveDatabase(db);
+    const settings = await prisma.studioSettings.findFirst();
+    if (settings) {
+      await prisma.studioSettings.update({
+        where: { id: settings.id },
+        data: { whatsappPhone: data.whatsappPhone.trim() },
+      });
+    } else {
+      await prisma.studioSettings.create({
+        data: {
+          studioName: "ÁGAPE STUDIO",
+          whatsappPhone: data.whatsappPhone.trim(),
+          depositPolicy: "Tolerancia máxima de 15 minutos de espera.",
+        },
+      });
+    }
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -274,9 +350,13 @@ export async function updateStudioSettings(data: { whatsappPhone: string }) {
  */
 export async function getPublicServices() {
   try {
-    const db = await getDatabase();
-    const services = db.services && db.services.length > 0 ? db.services : SERVICIOS_AGAPE;
-    return services.filter((s) => s.activo);
+    const services = await prisma.dynamicService.findMany({
+      where: { activo: true },
+    });
+    if (services && services.length > 0) {
+      return services;
+    }
+    return SERVICIOS_AGAPE.filter((s) => s.activo);
   } catch (error) {
     console.error("Error al obtener servicios públicos:", error);
     return SERVICIOS_AGAPE.filter((s) => s.activo);
