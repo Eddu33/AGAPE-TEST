@@ -81,7 +81,7 @@ export async function getCalculatedAvailability(
       busyIntervals,
       blockedTimes: blockedTimes.map(b => ({ ...b, reason: b.reason || "" })),
       specialOpenings: specialOpenings.map(s => ({ ...s, reason: s.reason || "", open: s.startTime, close: s.endTime })),
-      weeklySchedule: formattedSchedule,
+      weeklySchedule: formattedSchedule.length > 0 ? formattedSchedule : undefined,
       slotStepMinutes: 30,
     });
 
