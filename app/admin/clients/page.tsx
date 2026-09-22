@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminNavbar from "@/components/AdminNavbar";
-import { getAdminClientsEnhanced, updateClientDetails } from "../actions";
+import { getAdminClientsEnhanced, updateClientDetails, deleteClient } from "../actions";
 import { StoredClient } from "@/lib/db";
 import {
   Users,
@@ -102,6 +102,32 @@ export default function AdminClientsPage() {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteClient = async () => {
+    if (!editingClient) return;
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que deseas eliminar a ${editingClient.name}? Esta acción no se puede deshacer y eliminará sus turnos asociados.`
+    );
+    if (!confirmDelete) return;
+
+    setSaving(true);
+    try {
+      const res = await deleteClient(editingClient.id);
+      if (res.success) {
+        setEditingClient(null);
+        await fetchClientsData();
+        setFeedback("Cliente eliminado correctamente.");
+        setTimeout(() => setFeedback(null), 3000);
+      } else {
+        alert(res.error || "Error al eliminar el cliente.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Ocurrió un error al intentar eliminar.");
     } finally {
       setSaving(false);
     }
@@ -569,21 +595,32 @@ export default function AdminClientsPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#F5F0E6]">
+                <div className="flex items-center justify-between pt-3 border-t border-[#F5F0E6]">
                   <button
                     type="button"
-                    onClick={() => setEditingClient(null)}
-                    className="px-4 py-2 rounded-full bg-[#F5F0E6] text-[#2B2B2B] text-xs font-semibold hover:bg-[#E5E5E5] transition-colors cursor-pointer"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
+                    onClick={handleDeleteClient}
                     disabled={saving}
-                    className="px-5 py-2 rounded-full bg-[#2B2B2B] text-[#FFFFFF] text-xs font-semibold hover:bg-[#D4AF37] hover:text-[#2B2B2B] transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+                    className="px-4 py-2 rounded-full bg-rose-50 text-rose-600 text-xs font-semibold hover:bg-rose-100 transition-colors cursor-pointer disabled:opacity-50"
                   >
-                    {saving ? "Guardando..." : "Guardar Cambios"}
+                    Eliminar Cliente
                   </button>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setEditingClient(null)}
+                      className="px-4 py-2 rounded-full bg-[#F5F0E6] text-[#2B2B2B] text-xs font-semibold hover:bg-[#E5E5E5] transition-colors cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="px-5 py-2 rounded-full bg-[#2B2B2B] text-[#FFFFFF] text-xs font-semibold hover:bg-[#D4AF37] hover:text-[#2B2B2B] transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+                    >
+                      {saving ? "Guardando..." : "Guardar Cambios"}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>

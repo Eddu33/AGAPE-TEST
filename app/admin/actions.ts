@@ -1,5 +1,8 @@
 "use server";
 
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
 import {
   getDatabaseAsync as getDatabase,
   saveDatabaseAsync as saveDatabase,
@@ -770,17 +773,19 @@ export async function rescheduleAdminAppointment(
 
 export async function getAdminClientsEnhanced() {
   try {
-    const db = await getDatabase();
     const today = new Date();
     const todayStr = formatDateKey(today);
 
-    return db.clients.map((client) => {
-      const clientApts = db.appointments.filter(
-        (a) => a.clientId === client.id || a.clientPhone.trim() === client.phone.trim()
-      );
+    const clients = await prisma.client.findMany({
+      include: {
+        appointments: true,
+      },
+    });
 
-      const completed = clientApts.filter((a) => a.status === "COMPLETED");
-      const lastApt = clientApts.sort((a, b) => b.date.localeCompare(a.date))[0];
+    return clients.map((client) => {
+      const completed = client.appointments.filter((a) => a.status === "COMPLETED");
+      const sortedApts = [...client.appointments].sort((a, b) => b.date.localeCompare(a.date));
+      const lastApt = sortedApts[0];
 
       let daysSinceLastVisit: number | undefined = undefined;
       if (lastApt) {
@@ -789,11 +794,8 @@ export async function getAdminClientsEnhanced() {
         daysSinceLastVisit = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
       }
 
-      // Comprobar si cumple años pronto (en los próximos 15 días)
       let isBirthdaySoon = false;
-      let birthdayDisplay = client.birthday || "";
       if (client.birthday) {
-        // Puede ser YYYY-MM-DD o DD/MM
         let bMonth = 0;
         let bDay = 0;
         if (client.birthday.includes("-")) {
@@ -816,8 +818,13 @@ export async function getAdminClientsEnhanced() {
       }
 
       return {
-        ...client,
-        appointmentsCount: clientApts.length,
+        id: client.id,
+        name: client.name,
+        phone: client.phone,
+        category: client.category as "Nueva" | "Recurrente" | "Frecuente" | "VIP" | undefined,
+        birthday: client.birthday || undefined,
+        notes: client.notes || undefined,
+        appointmentsCount: client.appointments.length,
         completedCount: completed.length,
         lastVisit: lastApt?.date,
         lastService: lastApt?.serviceName,
@@ -826,10 +833,11 @@ export async function getAdminClientsEnhanced() {
       };
     });
   } catch (error) {
-    console.error("Error obteniendo clientas:", error);
+    console.error("Error obteniendo clientas desde Prisma:", error);
     return [];
   }
 }
+
 
 export async function updateClientDetails(
   id: string,
@@ -837,28 +845,49 @@ export async function updateClientDetails(
     name?: string;
     phone?: string;
     birthday?: string;
-    category?: StoredClient["category"];
+    category?: string;
     notes?: string;
   }
 ) {
   try {
-    const db = await getDatabase();
-    const client = db.clients.find((c) => c.id === id);
-    if (client) {
-      if (data.name) client.name = data.name.trim();
-      if (data.phone) client.phone = data.phone.trim();
-      if (data.birthday !== undefined) client.birthday = data.birthday.trim();
-      if (data.category) client.category = data.category;
-      if (data.notes !== undefined) client.notes = data.notes.trim();
-      await saveDatabase(db);
-      revalidatePath("/admin/clients");
-      return { success: true };
-    }
-    return { success: false, error: "Clienta no encontrada" };
+    const updateData: any = {};
+    if (data.name) updateData.name = data.name.trim();
+    if (data.phone) updateData.phone = data.phone.trim();
+    if (data.birthday !== undefined) updateData.birthday = data.birthday.trim() || null;
+    if (data.category) updateData.category = data.category;
+    if (data.notes !== undefined) updateData.notes = data.notes.trim() || null;
+
+    await prisma.client.update({
+      where: { id },
+      data: updateData,
+    });
+
+    revalidatePath("/admin/clients");
+    return { success: true };
   } catch (error: any) {
+    console.error("Error actualizando cliente en Prisma:", error);
     return { success: false, error: error.message };
   }
 }
+
+export async function deleteClient(id: string) {
+  try {
+    // Primero eliminar turnos asociados para evitar error de clave foránea
+    await prisma.appointment.deleteMany({
+      where: { clientId: id },
+    });
+
+    await prisma.client.delete({
+      where: { id },
+    });
+    revalidatePath("/admin/clients");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error eliminando cliente en Prisma:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 
 // ==========================================
 // 5. PROMOCIONES Y VOUCHERS DE REGALO
