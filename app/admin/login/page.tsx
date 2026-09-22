@@ -12,13 +12,28 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username.toLowerCase() === "admin" && password === "admin123") {
-      localStorage.setItem("isAdmin", "true");
-      router.push("/admin/dashboard");
-    } else {
-      setError("Credenciales incorrectas. Prueba con: admin / admin123");
+    setError("");
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: username.trim().toLowerCase(), password }),
+      });
+
+      if (response.ok) {
+        localStorage.setItem("isAdmin", "true");
+        router.push("/admin/dashboard");
+      } else {
+        const data = await response.json();
+        setError(data.error || "Credenciales incorrectas.");
+      }
+    } catch (err) {
+      setError("Error de conexión con el servidor.");
     }
   };
 
@@ -64,7 +79,7 @@ export default function AdminLoginPage() {
               </label>
               <input
                 type="text"
-                placeholder="admin"
+                placeholder="Ingresa tu usuario"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -79,7 +94,7 @@ export default function AdminLoginPage() {
               </label>
               <input
                 type="password"
-                placeholder="admin123"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -104,7 +119,7 @@ export default function AdminLoginPage() {
 
           <div className="mt-6 pt-6 border-t border-[#262626] text-center text-xs text-[#888888]">
             <p className="font-light">
-              Credenciales por defecto: <strong className="text-[#FFFFFF]">admin</strong> / <strong className="text-[#FFFFFF]">admin123</strong>
+              Acceso restringido únicamente a personal autorizado de Ágape Studio.
             </p>
           </div>
         </div>
