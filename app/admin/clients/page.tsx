@@ -21,6 +21,8 @@ import {
   UserCheck,
   UserX,
   Heart,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
 
 type ClientWithMetrics = StoredClient & {
@@ -49,6 +51,10 @@ export default function AdminClientsPage() {
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Modal de confirmación para eliminar
+  const [clientToDelete, setClientToDelete] = useState<ClientWithMetrics | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const isAdmin = localStorage.getItem("isAdmin");
@@ -107,29 +113,24 @@ export default function AdminClientsPage() {
     }
   };
 
-  const handleDeleteClient = async () => {
-    if (!editingClient) return;
-    const confirmDelete = window.confirm(
-      `¿Estás seguro de que deseas eliminar a ${editingClient.name}? Esta acción no se puede deshacer y eliminará sus turnos asociados.`
-    );
-    if (!confirmDelete) return;
-
-    setSaving(true);
+  const handleDeleteClientConfirmed = async () => {
+    if (!clientToDelete) return;
+    setIsDeleting(true);
     try {
-      const res = await deleteClient(editingClient.id);
+      const res = await deleteClient(clientToDelete.id);
       if (res.success) {
-        setEditingClient(null);
+        setClientToDelete(null);
         await fetchClientsData();
-        setFeedback("Cliente eliminado correctamente.");
+        setFeedback("Ficha de cliente eliminada permanentemente.");
         setTimeout(() => setFeedback(null), 3000);
       } else {
-        alert(res.error || "Error al eliminar el cliente.");
+        alert(res.error || "Error al eliminar la ficha del cliente.");
       }
     } catch (err) {
       console.error(err);
-      alert("Ocurrió un error al intentar eliminar.");
+      alert("Ocurrió un error de conexión al intentar eliminar.");
     } finally {
-      setSaving(false);
+      setIsDeleting(false);
     }
   };
 
@@ -315,13 +316,22 @@ export default function AdminClientsPage() {
                   </div>
 
                   <div className="flex items-center justify-between pt-4 mt-4 border-t border-[#F5F0E6]">
-                    <button
-                      onClick={() => handleOpenEditModal(c)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#2B2B2B] hover:text-[#D4AF37] transition-colors cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span>Editar Perfil</span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleOpenEditModal(c)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#2B2B2B] hover:text-[#D4AF37] transition-colors cursor-pointer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        <span>Editar</span>
+                      </button>
+                      <button
+                        onClick={() => setClientToDelete(c)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-rose-500 hover:text-rose-700 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Borrar</span>
+                      </button>
+                    </div>
 
                     <button
                       onClick={() =>
@@ -595,34 +605,59 @@ export default function AdminClientsPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-[#F5F0E6]">
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#F5F0E6]">
                   <button
                     type="button"
-                    onClick={handleDeleteClient}
-                    disabled={saving}
-                    className="px-4 py-2 rounded-full bg-rose-50 text-rose-600 text-xs font-semibold hover:bg-rose-100 transition-colors cursor-pointer disabled:opacity-50"
+                    onClick={() => setEditingClient(null)}
+                    className="px-4 py-2 rounded-full bg-[#F5F0E6] text-[#2B2B2B] text-xs font-semibold hover:bg-[#E5E5E5] transition-colors cursor-pointer"
                   >
-                    Eliminar Cliente
+                    Cancelar
                   </button>
-
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setEditingClient(null)}
-                      className="px-4 py-2 rounded-full bg-[#F5F0E6] text-[#2B2B2B] text-xs font-semibold hover:bg-[#E5E5E5] transition-colors cursor-pointer"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="px-5 py-2 rounded-full bg-[#2B2B2B] text-[#FFFFFF] text-xs font-semibold hover:bg-[#D4AF37] hover:text-[#2B2B2B] transition-colors shadow-sm cursor-pointer disabled:opacity-50"
-                    >
-                      {saving ? "Guardando..." : "Guardar Cambios"}
-                    </button>
-                  </div>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="px-5 py-2 rounded-full bg-[#2B2B2B] text-[#FFFFFF] text-xs font-semibold hover:bg-[#D4AF37] hover:text-[#2B2B2B] transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+                  >
+                    {saving ? "Guardando..." : "Guardar Cambios"}
+                  </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Confirmación para Eliminar Clienta */}
+        {clientToDelete && (
+          <div className="fixed inset-0 z-[60] bg-[#2B2B2B]/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-[#FFFFFF] rounded-3xl max-w-sm w-full p-6 sm:p-8 border border-rose-200 shadow-2xl text-center">
+              <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-500 mx-auto flex items-center justify-center mb-4">
+                <AlertTriangle className="w-8 h-8" />
+              </div>
+              <h2 className="font-cinzel text-xl font-bold text-[#2B2B2B] mb-2">
+                ¿Eliminar ficha de {clientToDelete.name}?
+              </h2>
+              <p className="text-xs text-[#666666] mb-6">
+                Esta acción no se puede deshacer. Se eliminarán permanentemente todos los datos de esta clienta y su historial de turnos asociados en la base de datos.
+              </p>
+              
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={handleDeleteClientConfirmed}
+                  disabled={isDeleting}
+                  className="w-full py-3 rounded-full bg-rose-600 text-[#FFFFFF] text-xs font-bold uppercase tracking-wider hover:bg-rose-700 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isDeleting ? "Eliminando ficha..." : "Sí, Eliminar Permanentemente"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setClientToDelete(null)}
+                  disabled={isDeleting}
+                  className="w-full py-3 rounded-full bg-[#F5F0E6] text-[#2B2B2B] text-xs font-bold uppercase tracking-wider hover:bg-[#E5E5E5] transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
         )}
