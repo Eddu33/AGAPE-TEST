@@ -15,22 +15,138 @@ model Admin {
 }
 
 model Client {
-  id           String        @id @default(uuid())
-  name         String
-  phone        String        @unique
-  createdAt    DateTime      @default(now())
-  appointments Appointment[]
+  id              String        @id @default(uuid())
+  name            String
+  phone           String        @unique
+  birthday        String?
+  category        String?       // "Nueva" | "Recurrente" | "Frecuente" | "VIP"
+  technicalRecord Json?         // { nailShape, nailLength, nailCondition, favoriteStyles, allergiesOrSensitivities, notes, lastServiceDate, recommendedMaintenanceDate }
+  lastVisit       DateTime?
+  totalVisits     Int           @default(0)
+  notes           String?
+  createdAt       DateTime      @default(now())
+  appointments    Appointment[]
 }
 
 model Appointment {
-  id            String   @id @default(uuid())
-  date          DateTime
-  status        String   @default("PENDING")
-  paymentMethod String?
+  id              String   @id @default(uuid())
+  date            String   // "YYYY-MM-DD"
+  startTime       String   // "15:00"
+  endTime         String   // "16:30"
+  durationMinutes Int
+  status          String   @default("PENDING") // "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW"
   
-  clientId      String
-  client        Client   @relation(fields: [clientId], references: [id])
+  paymentStatus   String?  // "PENDING" | "DEPOSIT_REQUESTED" | "DEPOSIT_PAID" | "PAID" | "AWAITING_VERIFICATION"
+  paymentMethod   String?  // "EFECTIVO" | "TRANSFERENCIA" | "OTRO"
+  paymentReceipt  String?
+  totalPrice      Float
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  clientId        String
+  client          Client   @relation(fields: [clientId], references: [id])
+  clientName      String
+  clientPhone     String
+
+  serviceId       String
+  serviceName     String
+  
+  extraIds        String[]
+  extraNames      String[]
+  
+  notes           String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model DynamicService {
+  id                String   @id @default(uuid())
+  nombre            String
+  categoria         String
+  precio            Float
+  duracion          Int
+  mantenimientoDias Int
+  descripcion       String
+  imagenUrl         String?
+  queIncluye        String[]
+  queNoIncluye      String[]
+  garantia          String?
+  instrucciones     String?
+  activo            Boolean  @default(true)
+  destacado         Boolean  @default(false)
+}
+
+model Expense {
+  id           String   @id @default(uuid())
+  fecha        String   // "YYYY-MM-DD"
+  categoria    String   // "Materiales" | "Esmaltes" | "Herramientas" | "Insumos" | "Mobiliario" | "Publicidad" | "Packaging" | "Otros"
+  descripcion  String
+  monto        Float
+  observaciones String?
+  createdAt    DateTime @default(now())
+}
+
+model Promotion {
+  id                  String   @id @default(uuid())
+  nombre              String
+  descripcion         String
+  descuentoPorcentaje Float?
+  precioPromo         Float
+  fechaInicio         String   // "YYYY-MM-DD"
+  fechaFin            String   // "YYYY-MM-DD"
+  serviciosIds        String[]
+  activo              Boolean  @default(true)
+  createdAt           DateTime @default(now())
+}
+
+model Voucher {
+  id               String   @id @default(uuid())
+  codigo           String   @unique
+  para             String
+  de               String
+  servicioONombre  String
+  monto            Float?
+  vencimiento      String   // "YYYY-MM-DD"
+  estado           String   // "DISPONIBLE" | "CANJEADO" | "UTILIZADO" | "VENCIDO" | "CANCELADO"
+  createdAt        DateTime @default(now())
+}
+
+model MessageTemplate {
+  id        String   @id @default(uuid())
+  tipo      String   // "CONFIRMACION" | "RECORDATORIO_24H" | ...
+  titulo    String
+  texto     String
+  variables String[]
+}
+
+model BlockedTime {
+  id          String @id @default(uuid())
+  date        String // "YYYY-MM-DD"
+  startTime   String // "09:00"
+  endTime     String // "13:00"
+  reason      String?
+}
+
+model SpecialOpening {
+  id          String @id @default(uuid())
+  date        String // "YYYY-MM-DD"
+  startTime   String // "09:00"
+  endTime     String // "13:00"
+  reason      String?
+}
+
+model DaySchedule {
+  id          String  @id @default(uuid())
+  dayOfWeek   Int     @unique // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+  isOpen      Boolean @default(false)
+  openTime    String? // "09:00"
+  closeTime   String? // "18:00"
+  breakStart  String? // "13:00"
+  breakEnd    String? // "14:00"
+}
+
+model StudioSettings {
+  id            String @id @default(uuid())
+  studioName    String
+  whatsappPhone String
+  depositPolicy String
 }
