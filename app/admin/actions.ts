@@ -826,7 +826,7 @@ export async function getAdminClientsEnhanced() {
         notes: client.notes || undefined,
         createdAt: client.createdAt.toISOString(),
         totalVisits: client.totalVisits,
-        technicalRecord: client.technicalRecord || undefined,
+        technicalRecord: client.technicalRecord as any,
         appointmentsCount: client.appointments.length,
         completedCount: completed.length,
         lastVisit: lastApt?.date,
