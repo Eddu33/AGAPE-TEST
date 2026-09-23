@@ -62,24 +62,33 @@ export async function getCalculatedAvailability(
 
     // Convertir DaySchedule a array compatible con lib/availability
     const DAYS_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const formattedSchedule = weeklySchedule.map((ws) => ({
-      dayOfWeek: ws.dayOfWeek,
-      nombreDia: DAYS_NAMES[ws.dayOfWeek] || "Desconocido",
-      isWorkingDay: ws.isOpen,
-      hours: {
-        open: ws.openTime || "09:00",
-        close: ws.closeTime || "18:00",
-        hasBreak: !!(ws.breakStart && ws.breakEnd),
-        breakStart: ws.breakStart || undefined,
-        breakEnd: ws.breakEnd || undefined,
-      }
-    }));
+    
+    // Si la base de datos tiene todos los días cerrados (isOpen = false para todos) o no tiene registros
+    // asumimos que el horario no ha sido configurado y usamos el por defecto.
+    const isScheduleConfigured = weeklySchedule.some(ws => ws.isOpen);
+    
+    let finalSchedule = DEFAULT_WEEKLY_SCHEDULE;
+    
+    if (isScheduleConfigured) {
+      const formattedSchedule = weeklySchedule.map((ws) => ({
+        dayOfWeek: ws.dayOfWeek,
+        nombreDia: DAYS_NAMES[ws.dayOfWeek] || "Desconocido",
+        isWorkingDay: ws.isOpen,
+        hours: {
+          open: ws.openTime || "09:00",
+          close: ws.closeTime || "18:00",
+          hasBreak: !!(ws.breakStart && ws.breakEnd),
+          breakStart: ws.breakStart || undefined,
+          breakEnd: ws.breakEnd || undefined,
+        }
+      }));
 
-    // Asegurar que siempre haya 7 días combinando la BD con los valores por defecto
-    const finalSchedule = DEFAULT_WEEKLY_SCHEDULE.map((defaultDay) => {
-      const dbDay = formattedSchedule.find((d) => d.dayOfWeek === defaultDay.dayOfWeek);
-      return dbDay || defaultDay;
-    });
+      // Asegurar que siempre haya 7 días combinando la BD con los valores por defecto
+      finalSchedule = DEFAULT_WEEKLY_SCHEDULE.map((defaultDay) => {
+        const dbDay = formattedSchedule.find((d) => d.dayOfWeek === defaultDay.dayOfWeek);
+        return dbDay || defaultDay;
+      });
+    }
 
     // Ejecutar el motor de disponibilidad matemática
     const slots = calculateAvailableSlots({
@@ -88,7 +97,7 @@ export async function getCalculatedAvailability(
       busyIntervals,
       blockedTimes: blockedTimes.map(b => ({ ...b, reason: b.reason || "" })),
       specialOpenings: specialOpenings.map(s => ({ ...s, reason: s.reason || "", open: s.startTime, close: s.endTime })),
-      weeklySchedule: formattedSchedule.length > 0 ? finalSchedule : undefined,
+      weeklySchedule: finalSchedule,
       slotStepMinutes: 30,
     });
 
