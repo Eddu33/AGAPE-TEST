@@ -10,6 +10,7 @@ import {
   DaySchedule,
   SpecialOpening,
   BlockedTime,
+  DEFAULT_WEEKLY_SCHEDULE,
 } from "@/lib/availability";
 import {
   INITIAL_SERVICES,
@@ -74,6 +75,12 @@ export async function getCalculatedAvailability(
       }
     }));
 
+    // Asegurar que siempre haya 7 días combinando la BD con los valores por defecto
+    const finalSchedule = DEFAULT_WEEKLY_SCHEDULE.map((defaultDay) => {
+      const dbDay = formattedSchedule.find((d) => d.dayOfWeek === defaultDay.dayOfWeek);
+      return dbDay || defaultDay;
+    });
+
     // Ejecutar el motor de disponibilidad matemática
     const slots = calculateAvailableSlots({
       date: targetDate,
@@ -81,7 +88,7 @@ export async function getCalculatedAvailability(
       busyIntervals,
       blockedTimes: blockedTimes.map(b => ({ ...b, reason: b.reason || "" })),
       specialOpenings: specialOpenings.map(s => ({ ...s, reason: s.reason || "", open: s.startTime, close: s.endTime })),
-      weeklySchedule: formattedSchedule.length > 0 ? formattedSchedule : undefined,
+      weeklySchedule: formattedSchedule.length > 0 ? finalSchedule : undefined,
       slotStepMinutes: 30,
     });
 

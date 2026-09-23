@@ -95,6 +95,13 @@ function BookContent() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // 4. Ubicación de Atención
+  const [locationType, setLocationType] = useState<"LOCAL" | "DOMICILIO">("LOCAL");
+  const [addressStreet, setAddressStreet] = useState("");
+  const [addressNumber, setAddressNumber] = useState("");
+  const [addressNeighborhood, setAddressNeighborhood] = useState("");
+  const [addressInfo, setAddressInfo] = useState("");
+
   // Extras seleccionados
   const selectedExtras = EXTRAS_AGAPE.filter((e) =>
     selectedExtraIds.includes(e.id)
@@ -156,6 +163,18 @@ function BookContent() {
     setErrorMessage(null);
 
     try {
+      let finalNotes = notes.trim();
+      if (locationType === "DOMICILIO") {
+        if (!addressStreet.trim() || !addressNumber.trim() || !addressNeighborhood.trim()) {
+          setErrorMessage("Por favor completa los datos obligatorios de tu domicilio (calle, altura y barrio).");
+          setSubmitting(false);
+          return;
+        }
+        finalNotes = `ATENCIÓN A DOMICILIO\nCalle: ${addressStreet.trim()} ${addressNumber.trim()}\nBarrio: ${addressNeighborhood.trim()}\nInfo extra: ${addressInfo.trim()}\n\nObservaciones: ${finalNotes}`;
+      } else {
+        finalNotes = finalNotes ? `ATENCIÓN EN LOCAL\n\nObservaciones: ${finalNotes}` : `ATENCIÓN EN LOCAL`;
+      }
+
       const dateKey = formatDateKey(selectedDate);
       const res = await bookAgapeAppointment({
         name: name.trim(),
@@ -164,7 +183,7 @@ function BookContent() {
         extraIds: selectedExtraIds,
         date: dateKey,
         startTime: selectedSlot.time,
-        notes: notes.trim(),
+        notes: finalNotes,
       });
 
       if (res.success && res.appointmentId) {
@@ -479,6 +498,89 @@ function BookContent() {
                 />
               </div>
             </div>
+
+            {/* Selector de Ubicación */}
+            <div className="mb-4">
+              <label className="block text-xs font-semibold text-[#171717] dark:text-[#E0E0E0] mb-2 flex items-center gap-1">
+                <span>¿Dónde te vas a atender? *</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setLocationType("LOCAL")}
+                  className={`py-2.5 px-4 rounded-xl border text-xs font-bold transition-all ${
+                    locationType === "LOCAL"
+                      ? "bg-[#D4AF37] text-[#121212] border-[#D4AF37]"
+                      : "bg-[#FAF8F5] dark:bg-[#121212] text-[#737373] dark:text-[#A3A3A3] border-[#E2DBD0] dark:border-[#333333] hover:border-[#D4AF37]"
+                  }`}
+                >
+                  En el Local
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLocationType("DOMICILIO")}
+                  className={`py-2.5 px-4 rounded-xl border text-xs font-bold transition-all ${
+                    locationType === "DOMICILIO"
+                      ? "bg-[#D4AF37] text-[#121212] border-[#D4AF37]"
+                      : "bg-[#FAF8F5] dark:bg-[#121212] text-[#737373] dark:text-[#A3A3A3] border-[#E2DBD0] dark:border-[#333333] hover:border-[#D4AF37]"
+                  }`}
+                >
+                  A Domicilio
+                </button>
+              </div>
+            </div>
+
+            {locationType === "DOMICILIO" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 p-4 rounded-2xl bg-[#FDFBF7] dark:bg-[#1A1A1A] border border-[#E2DBD0] dark:border-[#2D2D2D]">
+                <div className="sm:col-span-2">
+                  <h4 className="text-xs font-bold text-[#B38E22] dark:text-[#D4AF37] mb-3 uppercase tracking-wide">Datos del Domicilio</h4>
+                </div>
+                
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#171717] dark:text-[#E0E0E0] mb-1.5">Calle *</label>
+                  <input
+                    type="text"
+                    required={locationType === "DOMICILIO"}
+                    placeholder="Ej: Av. San Martín"
+                    value={addressStreet}
+                    onChange={(e) => setAddressStreet(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-[#E2DBD0] dark:border-[#333333] text-xs focus:outline-none focus:border-[#D4AF37] bg-white dark:bg-[#121212] text-[#171717] dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#171717] dark:text-[#E0E0E0] mb-1.5">Altura / Número *</label>
+                  <input
+                    type="text"
+                    required={locationType === "DOMICILIO"}
+                    placeholder="Ej: 1530"
+                    value={addressNumber}
+                    onChange={(e) => setAddressNumber(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-[#E2DBD0] dark:border-[#333333] text-xs focus:outline-none focus:border-[#D4AF37] bg-white dark:bg-[#121212] text-[#171717] dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#171717] dark:text-[#E0E0E0] mb-1.5">Barrio *</label>
+                  <input
+                    type="text"
+                    required={locationType === "DOMICILIO"}
+                    placeholder="Ej: Centro"
+                    value={addressNeighborhood}
+                    onChange={(e) => setAddressNeighborhood(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-[#E2DBD0] dark:border-[#333333] text-xs focus:outline-none focus:border-[#D4AF37] bg-white dark:bg-[#121212] text-[#171717] dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#171717] dark:text-[#E0E0E0] mb-1.5">Piso, Depto, Timbre (Opcional)</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: 4to B, Casa con rejas"
+                    value={addressInfo}
+                    onChange={(e) => setAddressInfo(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-[#E2DBD0] dark:border-[#333333] text-xs focus:outline-none focus:border-[#D4AF37] bg-white dark:bg-[#121212] text-[#171717] dark:text-white"
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-semibold text-[#171717] dark:text-[#E0E0E0] mb-1.5 flex items-center gap-1">
