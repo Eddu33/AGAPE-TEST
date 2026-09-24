@@ -54,14 +54,26 @@ export const DEFAULT_WEEKLY_SCHEDULE: DaySchedule[] = [
   {
     dayOfWeek: 0,
     nombreDia: "Domingo",
-    isWorkingDay: false,
-    hours: { open: "09:00", close: "19:00", hasBreak: false },
+    isWorkingDay: true,
+    hours: {
+      open: "09:00",
+      close: "19:00",
+      hasBreak: true,
+      breakStart: "13:00",
+      breakEnd: "14:00",
+    },
   },
   {
     dayOfWeek: 1,
     nombreDia: "Lunes",
-    isWorkingDay: false,
-    hours: { open: "09:00", close: "19:00", hasBreak: false },
+    isWorkingDay: true,
+    hours: {
+      open: "09:00",
+      close: "19:00",
+      hasBreak: true,
+      breakStart: "13:00",
+      breakEnd: "14:00",
+    },
   },
   {
     dayOfWeek: 2,

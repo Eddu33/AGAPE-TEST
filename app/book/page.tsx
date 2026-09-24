@@ -408,7 +408,7 @@ function BookContent() {
                       El estudio no atiende en este día
                     </p>
                     <p className="text-[11px] text-[#737373] dark:text-[#A3A3A3] mt-1">
-                      Atendemos de Martes a Sábados. Por favor selecciona otro día en el calendario.
+                      El estudio se encuentra cerrado en esta fecha. Por favor selecciona otro día en el calendario.
                     </p>
                   </div>
                 ) : availableSlots.length === 0 ? (
