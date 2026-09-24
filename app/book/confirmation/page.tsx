@@ -107,7 +107,7 @@ function ConfirmationContent() {
     if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
       const aptDate = new Date(parts[0], parts[1] - 1, parts[2]);
       if (!isNaN(aptDate.getTime())) {
-        formattedDate = format(aptDate, "EEEE d 'de' MMMM, yyyy", { locale: es });
+        formattedDate = format(aptDate, "dd/MM/yyyy", { locale: es });
       }
     }
   } catch (err) {

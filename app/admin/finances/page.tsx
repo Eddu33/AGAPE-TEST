@@ -879,7 +879,7 @@ export default function AdminFinancesPage() {
                               {apt.clientName}
                             </span>
                             <span className="text-[11px] text-[#737373]">
-                              {apt.date} · {apt.startTime} hs
+                              {apt.date?.split("-").reverse().join("/")} · {apt.startTime} hs
                             </span>
 
                             {/* Badge de Estado del Turno */}

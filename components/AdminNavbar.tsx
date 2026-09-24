@@ -17,6 +17,7 @@ import {
   X,
   ChevronRight,
   ShieldCheck,
+  Settings,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -94,6 +95,12 @@ export default function AdminNavbar() {
       label: "Estadísticas Generales",
       desc: "Métricas de asistencia y rendimiento del estudio",
       icon: BarChart3,
+    },
+    {
+      href: "/admin/settings",
+      label: "Configuración",
+      desc: "Ubicación de atención y número de WhatsApp",
+      icon: Settings,
     },
   ];
 

@@ -326,6 +326,8 @@ export async function getStudioSettings() {
         studioName: settings.studioName || "ÁGAPE STUDIO",
         whatsappPhone: envPhone || settings.whatsappPhone || "",
         depositPolicy: settings.depositPolicy || "Tolerancia máxima de 15 minutos de espera.",
+        enableInShopBooking: settings.enableInShopBooking ?? true,
+        enableAtHomeBooking: settings.enableAtHomeBooking ?? true,
       };
     }
   } catch (e) {
@@ -335,23 +337,37 @@ export async function getStudioSettings() {
     studioName: "ÁGAPE STUDIO",
     whatsappPhone: envPhone || "",
     depositPolicy: "Tolerancia máxima de 15 minutos de espera.",
+    enableInShopBooking: true,
+    enableAtHomeBooking: true,
   };
 }
 
-export async function updateStudioSettings(data: { whatsappPhone: string }) {
+export async function updateStudioSettings(data: { 
+  whatsappPhone?: string; 
+  enableInShopBooking?: boolean; 
+  enableAtHomeBooking?: boolean; 
+}) {
   try {
     const settings = await prisma.studioSettings.findFirst();
+    
+    const updateData: any = {};
+    if (data.whatsappPhone !== undefined) updateData.whatsappPhone = data.whatsappPhone.trim();
+    if (data.enableInShopBooking !== undefined) updateData.enableInShopBooking = data.enableInShopBooking;
+    if (data.enableAtHomeBooking !== undefined) updateData.enableAtHomeBooking = data.enableAtHomeBooking;
+
     if (settings) {
       await prisma.studioSettings.update({
         where: { id: settings.id },
-        data: { whatsappPhone: data.whatsappPhone.trim() },
+        data: updateData,
       });
     } else {
       await prisma.studioSettings.create({
         data: {
           studioName: "ÁGAPE STUDIO",
-          whatsappPhone: data.whatsappPhone.trim(),
+          whatsappPhone: data.whatsappPhone?.trim() || "",
           depositPolicy: "Tolerancia máxima de 15 minutos de espera.",
+          enableInShopBooking: data.enableInShopBooking ?? true,
+          enableAtHomeBooking: data.enableAtHomeBooking ?? true,
         },
       });
     }

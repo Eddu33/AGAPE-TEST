@@ -16,7 +16,7 @@ import {
   formatDuration,
 } from "@/lib/services";
 import { SlotAvailability, formatDateKey, timeStringToMinutes } from "@/lib/availability";
-import { getCalculatedAvailability, bookAgapeAppointment, getPublicServices } from "../actions";
+import { getCalculatedAvailability, bookAgapeAppointment, getPublicServices, getStudioSettings } from "../actions";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -67,20 +67,7 @@ function BookContent() {
 
   // 2. Estado de Fecha y Horario
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => {
-    const today = new Date();
-    // Si hoy es domingo (0) o lunes (1), sugerir el próximo martes
-    const day = today.getDay();
-    if (day === 0) {
-      const next = new Date(today);
-      next.setDate(today.getDate() + 2);
-      return next;
-    }
-    if (day === 1) {
-      const next = new Date(today);
-      next.setDate(today.getDate() + 1);
-      return next;
-    }
-    return today;
+    return new Date();
   });
 
   const [selectedSlot, setSelectedSlot] = useState<SlotAvailability | null>(null);
@@ -101,6 +88,19 @@ function BookContent() {
   const [addressNumber, setAddressNumber] = useState("");
   const [addressNeighborhood, setAddressNeighborhood] = useState("");
   const [addressInfo, setAddressInfo] = useState("");
+
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    getStudioSettings().then((res) => {
+      setSettings(res);
+      if (res.enableInShopBooking && !res.enableAtHomeBooking) {
+        setLocationType("LOCAL");
+      } else if (!res.enableInShopBooking && res.enableAtHomeBooking) {
+        setLocationType("DOMICILIO");
+      }
+    });
+  }, []);
 
   // Extras seleccionados
   const selectedExtras = EXTRAS_AGAPE.filter((e) =>
@@ -386,7 +386,7 @@ function BookContent() {
                 <div className="text-xs font-bold text-[#171717] dark:text-[#FFFFFF] mb-2 flex items-center justify-between">
                   <span>
                     {selectedDate ? (
-                      format(selectedDate, "EEEE d 'de' MMMM", { locale: es })
+                      format(selectedDate, "dd/MM/yyyy", { locale: es })
                     ) : (
                       "Selecciona un día"
                     )}
@@ -505,6 +505,7 @@ function BookContent() {
                 <span>¿Dónde te vas a atender? *</span>
               </label>
               <div className="grid grid-cols-2 gap-3">
+                {settings?.enableInShopBooking !== false && (
                 <button
                   type="button"
                   onClick={() => setLocationType("LOCAL")}
@@ -516,6 +517,8 @@ function BookContent() {
                 >
                   En el Local
                 </button>
+                )}
+                {settings?.enableAtHomeBooking !== false && (
                 <button
                   type="button"
                   onClick={() => setLocationType("DOMICILIO")}
@@ -527,6 +530,7 @@ function BookContent() {
                 >
                   A Domicilio
                 </button>
+                )}
               </div>
             </div>
 
@@ -632,7 +636,7 @@ function BookContent() {
                 <CalendarIcon className="w-4 h-4 text-[#B38E22] dark:text-[#D4AF37]" />
                 <span className="text-[#171717] dark:text-white font-medium">
                   {selectedDate
-                    ? format(selectedDate, "EEEE d 'de' MMMM, yyyy", { locale: es })
+                    ? format(selectedDate, "dd/MM/yyyy", { locale: es })
                     : "Fecha no seleccionada"}
                 </span>
               </div>

@@ -219,12 +219,25 @@ export default function AdminDashboardPage() {
 
   // 1. Cambio de Estado del Turno (Confirmado, Asistió, Cancelado, No asistió)
   const handleStatusChange = async (id: string, status: StoredAppointment["status"]) => {
+    const apt = appointments.find((a) => a.id === id);
     // Actualización optimista inmediata en 0ms para refrescar las 4 tarjetas de métricas al instante
     setAppointments((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status, updatedAt: new Date().toISOString() } : a))
     );
     try {
       await updateAppointmentStatus(id, status);
+      if (status === "COMPLETED" && apt) {
+        if (window.confirm("Turno completado. ¿Deseas programar el próximo turno de mantenimiento (sugerido en 15 días)?")) {
+          const nextDate = new Date();
+          nextDate.setDate(nextDate.getDate() + 15);
+          setManualName(apt.clientName);
+          setManualPhone(apt.clientPhone);
+          setManualServiceId(apt.serviceId || "kapping-gel");
+          setManualDate(formatDateKey(nextDate));
+          setManualTime(apt.startTime);
+          setIsManualModalOpen(true);
+        }
+      }
     } catch (err) {
       console.error("Error al persistir estado en BD:", err);
     }
@@ -511,7 +524,7 @@ export default function AdminDashboardPage() {
             <div className="text-center p-3 rounded-2xl bg-[#FAF8F5] dark:bg-[#282828] border border-[#E2DBD0] dark:border-[#3A3A3A] min-w-[100px] shrink-0">
               {showDate && (
                 <div className="text-[11px] font-bold text-[#8C7A5B] dark:text-[#D4AF37] pb-1 border-b border-[#E2DBD0] dark:border-[#3A3A3A] mb-1">
-                  {apt.date}
+                  {apt.date?.split("-").reverse().join("/")}
                 </div>
               )}
               <div className="text-base font-cinzel font-bold text-[#171717] dark:text-white">

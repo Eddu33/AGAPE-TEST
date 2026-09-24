@@ -562,18 +562,38 @@ export default function AdminServicesPage() {
 
                 {/* Imagen del Servicio */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-semibold text-[#2B2B2B]">
-                    Imagen del Servicio (URL o Selección Rápida)
+                  <label className="block text-xs font-semibold text-[#2B2B2B] dark:text-[#E0E0E0]">
+                    Imagen del Servicio (URL o Subir Archivo JPG/PNG)
                   </label>
-                  <input
-                    type="url"
-                    value={editingService.imagenUrl || ""}
-                    onChange={(e) =>
-                      setEditingService({ ...editingService, imagenUrl: e.target.value })
-                    }
-                    placeholder="https://images.unsplash.com/..."
-                    className="w-full px-3.5 py-2 rounded-xl border border-[#DCC5A3]/60 text-xs focus:outline-none focus:border-[#D4AF37]"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={editingService.imagenUrl || ""}
+                      onChange={(e) =>
+                        setEditingService({ ...editingService, imagenUrl: e.target.value })
+                      }
+                      placeholder="Pega un link o sube una imagen..."
+                      className="flex-1 px-3.5 py-2 rounded-xl border border-[#DCC5A3]/60 dark:border-[#333333] text-xs focus:outline-none focus:border-[#D4AF37] bg-transparent"
+                    />
+                    <label className="shrink-0 px-4 py-2 bg-[#181818] dark:bg-[#D4AF37] text-white dark:text-[#121212] rounded-xl text-xs font-semibold cursor-pointer hover:bg-[#D4AF37] hover:text-[#181818] dark:hover:bg-white transition-colors flex items-center justify-center">
+                      Cargar
+                      <input 
+                        type="file" 
+                        accept="image/jpeg, image/png, image/webp"
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setEditingService({ ...editingService, imagenUrl: reader.result as string });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
 
                   {/* Galería de presets rápidos */}
                   <div>

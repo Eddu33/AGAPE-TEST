@@ -148,5 +148,7 @@ model StudioSettings {
   id            String @id @default(uuid())
   studioName    String
   whatsappPhone String
-  depositPolicy String
+  depositPolicy       String
+  enableInShopBooking Boolean @default(true)
+  enableAtHomeBooking Boolean @default(true)
 }
