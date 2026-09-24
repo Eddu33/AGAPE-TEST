@@ -397,3 +397,36 @@ export async function getPublicServices() {
 
 
 
+
+
+// GALLERY ACTIONS
+export async function getGalleryImages() {
+  try {
+    return await prisma.galleryImage.findMany({ orderBy: { createdAt: 'desc' } });
+  } catch (error) {
+    console.error('Error fetching gallery images:', error);
+    return [];
+  }
+}
+
+export async function uploadGalleryImage(url: string, name?: string) {
+  try {
+    const image = await prisma.galleryImage.create({
+      data: { url, name }
+    });
+    return { success: true, image };
+  } catch (error: any) {
+    console.error('Error uploading gallery image:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteGalleryImage(id: string) {
+  try {
+    await prisma.galleryImage.delete({ where: { id } });
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error deleting gallery image:', error);
+    return { success: false, error: error.message };
+  }
+}

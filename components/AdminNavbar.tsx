@@ -18,6 +18,7 @@ import {
   ChevronRight,
   ShieldCheck,
   Settings,
+  Image as ImageIcon,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -95,6 +96,12 @@ export default function AdminNavbar() {
       label: "Estadísticas Generales",
       desc: "Métricas de asistencia y rendimiento del estudio",
       icon: BarChart3,
+    },
+    {
+      href: "/admin/gallery",
+      label: "Galería de Imágenes",
+      desc: "Repositorio de fotos para tus servicios",
+      icon: ImageIcon,
     },
     {
       href: "/admin/settings",

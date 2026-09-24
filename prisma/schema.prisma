@@ -152,3 +152,10 @@ model StudioSettings {
   enableInShopBooking Boolean @default(true)
   enableAtHomeBooking Boolean @default(true)
 }
+
+model GalleryImage {
+  id        String   @id @default(uuid())
+  url       String   
+  name      String?
+  createdAt DateTime @default(now())
+}
