@@ -9,4 +9,5 @@ Siempre que realices cambios en el código (ya sea por peticiones del usuario, c
 **Reglas obligatorias:**
 1. Al finalizar de escribir y probar el código o solucionar los pedidos del usuario, comprueba tu estado en source control.
 2. Si hay archivos modificados, usa `git add .` seguido de un commit descriptivo: `git commit -m "feat/fix: descripción clara"`.
-3. Notifica al usuario que has guardado el progreso en git (Source Control).
+3. ¡CRÍTICO! Ejecuta `git push` para enviar los cambios a GitHub, de modo que Vercel u otras plataformas puedan desplegar los cambios en producción.
+4. Notifica al usuario que has guardado el progreso y lo has subido a GitHub.

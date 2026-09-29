@@ -10,8 +10,12 @@ import {
   saveAdminService,
   deleteAdminService,
   toggleServiceStatus,
+  getAdminExtras,
+  saveAdminExtra,
+  deleteAdminExtra,
+  toggleExtraStatus,
 } from "../actions";
-import { DynamicService } from "@/lib/db";
+import { DynamicService, DynamicExtra } from "@/lib/db";
 import { formatPrice, formatDuration } from "@/lib/services";
 import {
   Sparkles,
@@ -62,14 +66,18 @@ const PRESET_IMAGES = [
 
 export default function AdminServicesPage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"servicios" | "extras">("servicios");
   const [services, setServices] = useState<DynamicService[]>([]);
+  const [extras, setExtras] = useState<DynamicExtra[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>("Todas");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Estado del Modal de Crear/Editar
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExtraModalOpen, setIsExtraModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<Partial<DynamicService> | null>(null);
+  const [editingExtra, setEditingExtra] = useState<Partial<DynamicExtra> | null>(null);
   const [incluyeText, setIncluyeText] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
@@ -94,8 +102,11 @@ export default function AdminServicesPage() {
     setLoading(true);
     try {
       const data = await getAdminServices();
+      const extrasData = await getAdminExtras();
       setServices(data);
+      setExtras(extrasData);
       localStorage.setItem("agape_admin_services_cache", JSON.stringify(data));
+      localStorage.setItem("agape_admin_extras_cache", JSON.stringify(extrasData));
     } catch (err) {
       console.error(err);
     } finally {
@@ -104,26 +115,42 @@ export default function AdminServicesPage() {
   };
 
   const handleOpenNewModal = () => {
-    setEditingService({
-      nombre: "",
-      categoria: "Manicura",
-      precio: 15000,
-      duracion: 90,
-      mantenimientoDias: 21,
-      descripcion: "",
-      imagenUrl: PRESET_IMAGES[0].url,
-      queIncluye: [],
-      activo: true,
-      destacado: false,
-    });
-    setIncluyeText("");
-    setIsModalOpen(true);
+    if (activeTab === "servicios") {
+      setEditingService({
+        nombre: "",
+        categoria: "Manicura",
+        precio: 15000,
+        duracion: 90,
+        mantenimientoDias: 21,
+        descripcion: "",
+        imagenUrl: PRESET_IMAGES[0].url,
+        queIncluye: [],
+        activo: true,
+        destacado: false,
+      });
+      setIncluyeText("");
+      setIsModalOpen(true);
+    } else {
+      setEditingExtra({
+        nombre: "",
+        precio: 1500,
+        duracion: 15,
+        descripcion: "",
+        activo: true,
+      });
+      setIsExtraModalOpen(true);
+    }
   };
 
   const handleOpenEditModal = (service: DynamicService) => {
     setEditingService({ ...service });
     setIncluyeText((service.queIncluye || []).join("\n"));
     setIsModalOpen(true);
+  };
+
+  const handleOpenEditExtraModal = (extra: DynamicExtra) => {
+    setEditingExtra({ ...extra });
+    setIsExtraModalOpen(true);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -184,6 +211,55 @@ export default function AdminServicesPage() {
     }
   };
 
+  const handleSaveExtra = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingExtra?.nombre?.trim()) {
+      setMessage({ text: "El nombre del extra es obligatorio.", type: "error" });
+      return;
+    }
+
+    setSaving(true);
+    setMessage(null);
+
+    try {
+      const res = await saveAdminExtra(editingExtra);
+      if (res.success) {
+        setIsExtraModalOpen(false);
+        setEditingExtra(null);
+        await loadServices();
+        setMessage({ text: "Extra guardado exitosamente.", type: "success" });
+        setTimeout(() => setMessage(null), 4000);
+      } else {
+        setMessage({ text: res.error || "Error al guardar el extra.", type: "error" });
+      }
+    } catch (error: any) {
+      setMessage({ text: error.message || "Error de conexión.", type: "error" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteExtra = async (id: string, name: string) => {
+    if (!confirm(`¿Estás segura de que deseas eliminar el extra "${name}"?`)) return;
+    try {
+      await deleteAdminExtra(id);
+      await loadServices();
+      setMessage({ text: `Extra "${name}" eliminado.`, type: "success" });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err: any) {
+      alert("Error al eliminar extra: " + err.message);
+    }
+  };
+
+  const handleToggleExtraActive = async (id: string) => {
+    try {
+      await toggleExtraStatus(id);
+      await loadServices();
+    } catch (err: any) {
+      console.error(err);
+    }
+  };
+
   // Categorías únicas
   const categories = ["Todas", ...Array.from(new Set(services.map((s) => s.categoria || "Manicura")))];
 
@@ -221,7 +297,31 @@ export default function AdminServicesPage() {
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#181818] dark:bg-[#D4AF37] text-[#FFFFFF] dark:text-[#121212] text-xs font-semibold hover:bg-[#D4AF37] hover:text-[#181818] dark:hover:bg-white transition-colors shadow-sm cursor-pointer self-start md:self-auto"
           >
             <Plus className="w-4 h-4" />
-            <span>Nuevo Servicio</span>
+            <span>{activeTab === "servicios" ? "Nuevo Servicio" : "Nuevo Extra"}</span>
+          </button>
+        </div>
+
+        {/* Pestañas Principales */}
+        <div className="flex items-center gap-4 mb-6 border-b border-black/10 dark:border-white/10 pb-2">
+          <button
+            onClick={() => setActiveTab("servicios")}
+            className={`pb-2 px-2 text-sm font-semibold transition-colors cursor-pointer border-b-2 ${
+              activeTab === "servicios"
+                ? "border-[#D4AF37] text-[#171717] dark:text-white"
+                : "border-transparent text-[#666666] dark:text-[#A0A0A0] hover:text-[#D4AF37]"
+            }`}
+          >
+            Servicios
+          </button>
+          <button
+            onClick={() => setActiveTab("extras")}
+            className={`pb-2 px-2 text-sm font-semibold transition-colors cursor-pointer border-b-2 ${
+              activeTab === "extras"
+                ? "border-[#D4AF37] text-[#171717] dark:text-white"
+                : "border-transparent text-[#666666] dark:text-[#A0A0A0] hover:text-[#D4AF37]"
+            }`}
+          >
+            Extras
           </button>
         </div>
 
@@ -276,12 +376,14 @@ export default function AdminServicesPage() {
         </div>
 
         {/* Grilla de Servicios */}
-        {loading ? (
+        {loading && (
           <div className="p-16 text-center text-xs text-[#737373] dark:text-[#A0A0A0]">
             <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            Cargando servicios del catálogo...
+            Cargando catálogo...
           </div>
-        ) : filteredServices.length === 0 ? (
+        )}
+
+        {!loading && activeTab === "servicios" && filteredServices.length === 0 && (
           <div className="p-12 text-center bg-[#FFFFFF] dark:bg-[#1A1A1A] rounded-3xl border border-[#DDD8CF] dark:border-[#333333]">
             <Tag className="w-8 h-8 text-[#DCC5A3] mx-auto mb-2" />
             <h3 className="font-cinzel text-base font-bold text-[#171717] dark:text-[#FFFFFF]">
@@ -291,7 +393,9 @@ export default function AdminServicesPage() {
               Prueba cambiando la categoría o crea un nuevo servicio con el botón superior.
             </p>
           </div>
-        ) : (
+        )}
+
+        {!loading && activeTab === "servicios" && filteredServices.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredServices.map((service) => (
               <div
@@ -434,7 +538,89 @@ export default function AdminServicesPage() {
           </div>
         )}
 
-        {/* Modal para Crear / Editar Servicio */}
+        {!loading && activeTab === "extras" && extras.length === 0 && (
+          <div className="p-12 text-center bg-[#FFFFFF] dark:bg-[#1A1A1A] rounded-3xl border border-[#DDD8CF] dark:border-[#333333]">
+            <Tag className="w-8 h-8 text-[#DCC5A3] mx-auto mb-2" />
+            <h3 className="font-cinzel text-base font-bold text-[#171717] dark:text-[#FFFFFF]">
+              No se encontraron extras
+            </h3>
+            <p className="text-xs text-[#737373] dark:text-[#A0A0A0] mt-1">
+              Prueba creando un nuevo extra con el botón superior.
+            </p>
+          </div>
+        )}
+        
+        {!loading && activeTab === "extras" && extras.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {extras.map((extra) => (
+              <div
+                key={extra.id}
+                className={`bg-[#FFFFFF] dark:bg-[#1A1A1A] rounded-3xl border overflow-hidden transition-all flex flex-col justify-between ${
+                  extra.activo
+                    ? "border-[#DDD8CF] dark:border-[#2E2E2E] shadow-xs hover:shadow-md hover:border-[#D4AF37]"
+                    : "border-gray-200 dark:border-gray-800 opacity-60 bg-gray-50 dark:bg-gray-900/40"
+                }`}
+              >
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="font-cinzel text-lg font-bold text-[#171717] dark:text-[#FFFFFF]">
+                      {extra.nombre}
+                    </h3>
+                    <span className="font-cinzel text-base font-bold text-[#B38E22] dark:text-[#D4AF37] whitespace-nowrap">
+                      {formatPrice(extra.precio)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#666666] dark:text-[#A0A0A0] font-light line-clamp-2 mb-4">
+                    {extra.descripcion}
+                  </p>
+                  <div className="flex items-center gap-1.5 text-[11px] text-[#525252] dark:text-[#CCCCCC]">
+                    <Clock className="w-3.5 h-3.5 text-[#B38E22] dark:text-[#D4AF37]" />
+                    <span>{formatDuration(extra.duracion)}</span>
+                  </div>
+                </div>
+                <div className="p-4 bg-[#FAF8F5]/60 dark:bg-[#161616] border-t border-[#F5F0E6] dark:border-[#2E2E2E] flex items-center justify-between">
+                  <div className="text-[10px] font-semibold text-[#737373] dark:text-[#A0A0A0]">
+                    {extra.activo ? (
+                      <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Activo
+                      </span>
+                    ) : (
+                      <span className="text-gray-500">Pausado</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleToggleExtraActive(extra.id)}
+                      className={`p-1.5 rounded-full border border-transparent hover:border-[#DDD8CF] dark:hover:border-[#333333] transition-colors cursor-pointer ${
+                        extra.activo
+                          ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                      }`}
+                      title={extra.activo ? "Ocultar" : "Mostrar"}
+                    >
+                      {extra.activo ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    </button>
+                    <button
+                      onClick={() => handleOpenEditExtraModal(extra)}
+                      className="p-1.5 rounded-full hover:bg-[#FFFFFF] dark:hover:bg-[#252525] border border-transparent hover:border-[#DDD8CF] dark:hover:border-[#333333] text-[#171717] dark:text-white text-xs transition-colors cursor-pointer"
+                      title="Editar extra"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteExtra(extra.id, extra.nombre)}
+                      className="p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-950/40 border border-transparent hover:border-red-200 dark:hover:border-red-800 text-red-600 dark:text-red-400 text-xs transition-colors cursor-pointer"
+                      title="Eliminar extra"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}        {/* Modal para Crear / Editar Servicio */}
         {isModalOpen && editingService && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
             <div className="bg-[#FFFFFF] dark:bg-[#1A1A1A] rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 border border-[#DDD8CF] dark:border-[#333333] shadow-2xl my-8 text-[#171717] dark:text-white">
@@ -707,7 +893,130 @@ export default function AdminServicesPage() {
             </div>
           </div>
         )}
+        {/* Modal para Crear / Editar Extra */}
+        {isExtraModalOpen && editingExtra && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-[#FFFFFF] dark:bg-[#1A1A1A] rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-[#DDD8CF] dark:border-[#333333] shadow-2xl my-8 text-[#171717] dark:text-white">
+              <div className="flex items-center justify-between pb-4 border-b border-[#EBE6DC] dark:border-[#2E2E2E] mb-6">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-[#B38E22] dark:text-[#D4AF37] tracking-wider">
+                    Editor de Extras
+                  </span>
+                  <h2 className="font-cinzel text-xl font-bold text-[#171717] dark:text-[#FFFFFF]">
+                    {editingExtra.id ? `Modificar: ${editingExtra.nombre}` : "Nuevo Extra"}
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsExtraModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-[#F5F0E6] text-[#2B2B2B] text-sm font-bold flex items-center justify-center hover:bg-[#E5E5E5] transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveExtra} className="space-y-5">
+                <div>
+                  <label className="block text-xs font-semibold text-[#2B2B2B] mb-1">
+                    Nombre del Extra *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingExtra.nombre || ""}
+                    onChange={(e) =>
+                      setEditingExtra({ ...editingExtra, nombre: e.target.value })
+                    }
+                    placeholder="Ej: Nail Art Simple..."
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#DCC5A3]/60 text-xs focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2B2B2B] mb-1">
+                      Precio ($)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={0}
+                      value={editingExtra.precio || 0}
+                      onChange={(e) =>
+                        setEditingExtra({ ...editingExtra, precio: Number(e.target.value) })
+                      }
+                      className="w-full px-3.5 py-2 rounded-xl border border-[#DCC5A3]/60 text-xs focus:outline-none focus:border-[#D4AF37]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2B2B2B] mb-1">
+                      Duración Adicional (min)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={0}
+                      step={15}
+                      value={editingExtra.duracion || 0}
+                      onChange={(e) =>
+                        setEditingExtra({ ...editingExtra, duracion: Number(e.target.value) })
+                      }
+                      className="w-full px-3.5 py-2 rounded-xl border border-[#DCC5A3]/60 text-xs focus:outline-none focus:border-[#D4AF37]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#2B2B2B] mb-1">
+                    Descripción
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={editingExtra.descripcion || ""}
+                    onChange={(e) =>
+                      setEditingExtra({ ...editingExtra, descripcion: e.target.value })
+                    }
+                    placeholder="Detalla en qué consiste el extra..."
+                    className="w-full px-3.5 py-2 rounded-xl border border-[#DCC5A3]/60 text-xs focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-6 pt-2">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[#2B2B2B] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editingExtra.activo ?? true}
+                      onChange={(e) =>
+                        setEditingExtra({ ...editingExtra, activo: e.target.checked })
+                      }
+                      className="rounded border-[#DCC5A3] text-[#D4AF37] focus:ring-[#D4AF37]"
+                    />
+                    <span>Extra Activo</span>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F5F0E6]">
+                  <button
+                    type="button"
+                    onClick={() => setIsExtraModalOpen(false)}
+                    className="px-5 py-2.5 rounded-full bg-[#F5F0E6] text-[#2B2B2B] text-xs font-semibold hover:bg-[#E5E5E5] transition-colors cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="px-6 py-2.5 rounded-full bg-[#2B2B2B] text-[#FFFFFF] text-xs font-semibold hover:bg-[#D4AF37] hover:text-[#2B2B2B] transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+                  >
+                    {saving ? "Guardando..." : "Guardar Extra"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
 }
+

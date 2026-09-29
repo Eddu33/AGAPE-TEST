@@ -430,3 +430,19 @@ export async function deleteGalleryImage(id: string) {
     return { success: false, error: error.message };
   }
 }
+
+
+export async function getPublicExtras() {
+  try {
+    const extras = await prisma.dynamicExtra.findMany({
+      where: { activo: true },
+    });
+    if (extras && extras.length > 0) {
+      return extras;
+    }
+    return EXTRAS_AGAPE.filter((s) => s.activo);
+  } catch (error) {
+    console.error("Error al obtener extras publicos:", error);
+    return EXTRAS_AGAPE.filter((s) => s.activo);
+  }
+}

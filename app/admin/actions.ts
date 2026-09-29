@@ -1049,3 +1049,92 @@ export async function saveAdminTemplate(id: string, texto: string) {
     return { success: false, error: error.message };
   }
 }
+
+
+export async function getAdminExtras() {
+  try {
+    const extras = await prisma.dynamicExtra.findMany();
+    if (extras.length > 0) return extras;
+    return [];
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function saveAdminExtra(data: any) {
+  try {
+    if (data.id && data.id.length > 5) { // UUID
+      const exists = await prisma.dynamicExtra.findUnique({ where: { id: data.id } });
+      if (exists) {
+        await prisma.dynamicExtra.update({
+          where: { id: data.id },
+          data: {
+            nombre: data.nombre,
+            precio: Number(data.precio),
+            duracion: Number(data.duracion),
+            descripcion: data.descripcion,
+            activo: data.activo
+          }
+        });
+      } else {
+        await prisma.dynamicExtra.create({
+          data: {
+            id: data.id,
+            nombre: data.nombre,
+            precio: Number(data.precio),
+            duracion: Number(data.duracion),
+            descripcion: data.descripcion,
+            activo: data.activo !== undefined ? data.activo : true
+          }
+        });
+      }
+    } else {
+      await prisma.dynamicExtra.create({
+        data: {
+          id: randomUUID(),
+          nombre: data.nombre,
+          precio: Number(data.precio),
+          duracion: Number(data.duracion),
+          descripcion: data.descripcion,
+          activo: data.activo !== undefined ? data.activo : true
+        }
+      });
+    }
+    revalidatePath("/admin/services");
+    revalidatePath("/servicios");
+    revalidatePath("/book");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteAdminExtra(id: string) {
+  try {
+    await prisma.dynamicExtra.delete({ where: { id } });
+    revalidatePath("/admin/services");
+    revalidatePath("/servicios");
+    revalidatePath("/book");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function toggleExtraStatus(id: string) {
+  try {
+    const extra = await prisma.dynamicExtra.findUnique({ where: { id } });
+    if (extra) {
+      await prisma.dynamicExtra.update({
+        where: { id },
+        data: { activo: !extra.activo }
+      });
+      revalidatePath("/admin/services");
+      revalidatePath("/servicios");
+      return { success: true };
+    }
+    return { success: false };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
