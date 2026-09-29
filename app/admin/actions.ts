@@ -1055,9 +1055,9 @@ export async function getAdminExtras() {
   try {
     const extras = await prisma.dynamicExtra.findMany();
     if (extras.length > 0) return extras;
-    return [];
+    return EXTRAS_AGAPE;
   } catch (error) {
-    return [];
+    return EXTRAS_AGAPE;
   }
 }
 
