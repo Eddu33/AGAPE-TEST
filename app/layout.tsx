@@ -33,9 +33,9 @@ export const metadata: Metadata = {
     siteName: "ÁGAPE STUDIO",
     images: [
       {
-        url: "/logo-salon.png",
-        width: 800,
-        height: 600,
+        url: "/logo-agape-og.jpg",
+        width: 1920,
+        height: 1080,
         alt: "ÁGAPE STUDIO Logo",
       },
     ],
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ÁGAPE STUDIO | Manicuría & Cuidado de Uñas",
     description: "La belleza nace del amor perfecto. Sistema de turnos y estética de uñas.",
-    images: ["/logo-salon.png"],
+    images: ["/logo-agape-og.jpg"],
   },
 };
 
