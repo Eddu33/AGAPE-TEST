@@ -57,7 +57,7 @@ export const DEFAULT_WEEKLY_SCHEDULE: DaySchedule[] = [
     isWorkingDay: true,
     hours: {
       open: "09:00",
-      close: "19:00",
+      close: "23:00",
       hasBreak: true,
       breakStart: "13:00",
       breakEnd: "14:00",
@@ -69,7 +69,7 @@ export const DEFAULT_WEEKLY_SCHEDULE: DaySchedule[] = [
     isWorkingDay: true,
     hours: {
       open: "09:00",
-      close: "19:00",
+      close: "23:00",
       hasBreak: true,
       breakStart: "13:00",
       breakEnd: "14:00",
@@ -81,7 +81,7 @@ export const DEFAULT_WEEKLY_SCHEDULE: DaySchedule[] = [
     isWorkingDay: true,
     hours: {
       open: "09:00",
-      close: "19:00",
+      close: "23:00",
       hasBreak: true,
       breakStart: "13:00",
       breakEnd: "14:00",
@@ -93,7 +93,7 @@ export const DEFAULT_WEEKLY_SCHEDULE: DaySchedule[] = [
     isWorkingDay: true,
     hours: {
       open: "09:00",
-      close: "19:00",
+      close: "23:00",
       hasBreak: true,
       breakStart: "13:00",
       breakEnd: "14:00",
@@ -105,7 +105,7 @@ export const DEFAULT_WEEKLY_SCHEDULE: DaySchedule[] = [
     isWorkingDay: true,
     hours: {
       open: "09:00",
-      close: "19:00",
+      close: "23:00",
       hasBreak: true,
       breakStart: "13:00",
       breakEnd: "14:00",
@@ -117,7 +117,7 @@ export const DEFAULT_WEEKLY_SCHEDULE: DaySchedule[] = [
     isWorkingDay: true,
     hours: {
       open: "09:00",
-      close: "19:00",
+      close: "23:00",
       hasBreak: true,
       breakStart: "13:00",
       breakEnd: "14:00",
@@ -129,7 +129,7 @@ export const DEFAULT_WEEKLY_SCHEDULE: DaySchedule[] = [
     isWorkingDay: true,
     hours: {
       open: "09:00",
-      close: "18:00",
+      close: "23:00",
       hasBreak: true,
       breakStart: "13:00",
       breakEnd: "14:00",
