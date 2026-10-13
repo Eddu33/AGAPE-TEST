@@ -15,8 +15,10 @@ import {
   createManualAppointment,
   addScheduleBlock,
   removeScheduleBlock,
+  getAdminServices,
+  getAdminExtras,
 } from "../actions";
-import { StoredAppointment } from "@/lib/db";
+import { StoredAppointment, DynamicService, DynamicExtra } from "@/lib/db";
 import { BlockedTime, formatDateKey } from "@/lib/availability";
 import {
   SERVICIOS_AGAPE,
@@ -101,12 +103,18 @@ export default function AdminDashboardPage() {
   // Formulario manual
   const [manualName, setManualName] = useState("");
   const [manualPhone, setManualPhone] = useState("");
-  const [manualServiceId, setManualServiceId] = useState(SERVICIOS_AGAPE[0]?.id || "kapping-gel");
+  const [manualServiceId, setManualServiceId] = useState("");
   const [manualExtraIds, setManualExtraIds] = useState<string[]>([]);
   const [manualDate, setManualDate] = useState(formatDateKey(new Date()));
   const [manualTime, setManualTime] = useState("10:00");
   const [manualNotes, setManualNotes] = useState("");
   const [submittingManual, setSubmittingManual] = useState(false);
+
+  // Servicios y Extras Dinámicos sincronizados con la Base de Datos
+  const [servicesList, setServicesList] = useState<DynamicService[]>([]);
+  const [extrasList, setExtrasList] = useState<DynamicExtra[]>([]);
+  const [manualPrice, setManualPrice] = useState<string>("");
+  const [isPriceCustom, setIsPriceCustom] = useState<boolean>(false);
 
   // Formulario de bloqueo
   const [blockDate, setBlockDate] = useState(formatDateKey(new Date()));
@@ -172,12 +180,20 @@ export default function AdminDashboardPage() {
     if (!silent) setLoading(true);
     setIsSyncing(true);
     try {
-      const [apts, blocks] = await Promise.all([
+      const [apts, blocks, dbServices, dbExtras] = await Promise.all([
         getAdminAppointments(),
         getAdminBlockedTimes(),
+        getAdminServices(),
+        getAdminExtras(),
       ]);
       setAppointments(apts);
       setBlockedTimes(blocks);
+      if (dbServices && dbServices.length > 0) {
+        setServicesList(dbServices);
+      }
+      if (dbExtras && dbExtras.length > 0) {
+        setExtrasList(dbExtras);
+      }
       setLastSyncTime(new Date());
     } catch (err) {
       console.error("Error al sincronizar datos del dashboard con la base de datos:", err);
@@ -186,6 +202,94 @@ export default function AdminDashboardPage() {
       setIsSyncing(false);
     }
   };
+
+  // Servicios y extras a mostrar (dinámicos con fallback a los predefinidos)
+  const displayServices = useMemo(() => {
+    if (servicesList && servicesList.length > 0) return servicesList;
+    return SERVICIOS_AGAPE;
+  }, [servicesList]);
+
+  const displayExtras = useMemo(() => {
+    if (extrasList && extrasList.length > 0) return extrasList;
+    return EXTRAS_AGAPE;
+  }, [extrasList]);
+
+  // Selección automática si cambia la lista o no hay servicio elegido
+  useEffect(() => {
+    if (displayServices.length > 0) {
+      if (!manualServiceId || !displayServices.some((s) => s.id === manualServiceId)) {
+        const firstActive = displayServices.find((s) => s.activo) || displayServices[0];
+        setManualServiceId(firstActive.id);
+      }
+    }
+  }, [displayServices, manualServiceId]);
+
+  const selectedManualService = useMemo(() => {
+    return (
+      displayServices.find((s) => s.id === manualServiceId) ||
+      displayServices[0]
+    );
+  }, [displayServices, manualServiceId]);
+
+  const selectedManualExtras = useMemo(() => {
+    return displayExtras.filter((e) => manualExtraIds.includes(e.id));
+  }, [displayExtras, manualExtraIds]);
+
+  const manualCalculatedPrice = useMemo(() => {
+    if (!selectedManualService) return 0;
+    const extrasPrice = selectedManualExtras.reduce((sum, e) => sum + (Number(e.precio) || 0), 0);
+    return (Number(selectedManualService.precio) || 0) + extrasPrice;
+  }, [selectedManualService, selectedManualExtras]);
+
+  // Sincronizar precio automáticamente con los precios actualizados a menos que el usuario lo haya editado manualmente
+  useEffect(() => {
+    if (!isPriceCustom) {
+      setManualPrice(String(manualCalculatedPrice));
+    }
+  }, [manualCalculatedPrice, isPriceCustom]);
+
+  // Cargar de localStorage inmediatamente si existe para reflejar precios en 0ms
+  useEffect(() => {
+    try {
+      const cachedServices = localStorage.getItem("agape_admin_services_cache");
+      if (cachedServices) {
+        const parsed = JSON.parse(cachedServices);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setServicesList(parsed);
+        }
+      }
+      const cachedExtras = localStorage.getItem("agape_admin_extras_cache");
+      if (cachedExtras) {
+        const parsed = JSON.parse(cachedExtras);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setExtrasList(parsed);
+        }
+      }
+    } catch (e) {}
+  }, []);
+
+  // Al abrir el modal manual, refrescar los servicios y extras para garantizar los precios más recientes
+  useEffect(() => {
+    if (isManualModalOpen) {
+      setIsPriceCustom(false);
+      getAdminServices().then((s) => {
+        if (s && s.length > 0) {
+          setServicesList(s);
+          try {
+            localStorage.setItem("agape_admin_services_cache", JSON.stringify(s));
+          } catch (e) {}
+        }
+      });
+      getAdminExtras().then((e) => {
+        if (e && e.length > 0) {
+          setExtrasList(e);
+          try {
+            localStorage.setItem("agape_admin_extras_cache", JSON.stringify(e));
+          } catch (e) {}
+        }
+      });
+    }
+  }, [isManualModalOpen]);
 
   useEffect(() => {
     const isAdmin = localStorage.getItem("isAdmin");
@@ -377,19 +481,25 @@ export default function AdminDashboardPage() {
     e.preventDefault();
     setSubmittingManual(true);
     try {
+      const finalPrice = manualPrice !== "" ? Number(manualPrice) : manualCalculatedPrice;
       await createManualAppointment({
         clientName: manualName,
         clientPhone: manualPhone,
-        serviceId: manualServiceId,
+        serviceId: selectedManualService?.id || manualServiceId,
+        serviceName: selectedManualService?.nombre,
         extraIds: manualExtraIds,
         date: manualDate,
         startTime: manualTime,
+        totalPrice: finalPrice,
         notes: manualNotes,
       });
       setIsManualModalOpen(false);
       setManualName("");
       setManualPhone("");
       setManualNotes("");
+      setManualExtraIds([]);
+      setIsPriceCustom(false);
+      setManualPrice("");
       await loadDashboardData(true);
     } catch (err) {
       alert("Error al agendar turno manual.");
@@ -1408,23 +1518,31 @@ export default function AdminDashboardPage() {
                   <label className="block font-semibold text-[#171717] dark:text-[#E0E0E0] mb-1">Servicio *</label>
                   <select
                     value={manualServiceId}
-                    onChange={(e) => setManualServiceId(e.target.value)}
+                    onChange={(e) => {
+                      setManualServiceId(e.target.value);
+                      setIsPriceCustom(false);
+                    }}
                     className="w-full px-3 py-2 rounded-xl border border-[#DDD8CF] dark:border-[#333333] bg-[#FAF8F5] dark:bg-[#222222] text-[#171717] dark:text-white"
                   >
-                    {SERVICIOS_AGAPE.map((s) => (
+                    {displayServices.map((s) => (
                       <option key={s.id} value={s.id} className="dark:bg-[#222222]">
-                        {s.nombre} — {formatDuration(s.duracion)} ({formatPrice(s.precio)})
+                        {s.nombre} — {formatDuration(s.duracion)} ({formatPrice(s.precio)}) {!s.activo ? "(Inactivo)" : ""}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-[#171717] dark:text-[#E0E0E0] mb-1">
-                    Extras (opcional)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-semibold text-[#171717] dark:text-[#E0E0E0]">
+                      Extras (opcional)
+                    </label>
+                    <span className="text-[11px] text-[#737373] dark:text-[#A0A0A0]">
+                      {manualExtraIds.length} seleccionado{manualExtraIds.length === 1 ? "" : "s"}
+                    </span>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {EXTRAS_AGAPE.map((ex) => {
+                    {displayExtras.map((ex) => {
                       const isChecked = manualExtraIds.includes(ex.id);
                       return (
                         <div
@@ -1435,20 +1553,74 @@ export default function AdminDashboardPage() {
                                 ? prev.filter((id) => id !== ex.id)
                                 : [...prev, ex.id]
                             );
+                            setIsPriceCustom(false);
                           }}
-                          className={`p-2 rounded-xl border cursor-pointer flex items-center justify-between ${
+                          className={`p-2.5 rounded-xl border cursor-pointer flex items-center justify-between transition-all ${
                             isChecked
-                              ? "bg-amber-100/70 dark:bg-amber-950/50 border-[#D4AF37] font-semibold text-[#171717] dark:text-white"
-                              : "bg-[#FFFFFF] dark:bg-[#222222] border-[#DDD8CF] dark:border-[#333333] text-[#171717] dark:text-[#CCCCCC]"
+                              ? "bg-amber-100/70 dark:bg-amber-950/50 border-[#D4AF37] font-semibold text-[#171717] dark:text-white shadow-xs"
+                              : "bg-[#FFFFFF] dark:bg-[#222222] border-[#DDD8CF] dark:border-[#333333] text-[#171717] dark:text-[#CCCCCC] hover:border-[#D4AF37]/50"
                           }`}
                         >
-                          <span>{ex.nombre}</span>
-                          <span className="text-[10px] text-[#737373] dark:text-[#A0A0A0]">
+                          <span className="text-xs">{ex.nombre}</span>
+                          <span className="text-[11px] font-semibold text-[#B8860B] dark:text-[#E6C65B]">
                             +{formatPrice(ex.precio)}
                           </span>
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+
+                {/* Resumen de Precio Actualizado con opción de edición manual */}
+                <div className="bg-[#F7F4EE] dark:bg-[#262626] p-3.5 rounded-2xl border border-[#E5DFD3] dark:border-[#3A3A3A] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#737373] dark:text-[#A0A0A0]">
+                        Precio del Turno
+                      </span>
+                      <p className="text-xs text-[#525252] dark:text-[#C0C0C0]">
+                        {selectedManualService?.nombre || "Servicio"}
+                        {selectedManualExtras.length > 0 && ` + ${selectedManualExtras.length} extra(s)`}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-lg font-bold text-[#171717] dark:text-[#E6C65B]">
+                        {formatPrice(manualPrice !== "" ? Number(manualPrice) : manualCalculatedPrice)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-[#E5DFD3] dark:border-[#3A3A3A] flex items-center justify-between gap-3">
+                    <label className="text-[11px] font-medium text-[#737373] dark:text-[#A0A0A0] shrink-0">
+                      Modificar precio para este turno ($):
+                    </label>
+                    <div className="flex items-center gap-2 flex-1 justify-end">
+                      <input
+                        type="number"
+                        min="0"
+                        step="100"
+                        value={manualPrice}
+                        onChange={(e) => {
+                          setManualPrice(e.target.value);
+                          setIsPriceCustom(true);
+                        }}
+                        className="w-28 px-2.5 py-1 text-right text-xs font-semibold rounded-lg border border-[#DDD8CF] dark:border-[#404040] bg-[#FFFFFF] dark:bg-[#1E1E1E] text-[#171717] dark:text-white"
+                        placeholder="Monto"
+                      />
+                      {isPriceCustom && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsPriceCustom(false);
+                            setManualPrice(String(manualCalculatedPrice));
+                          }}
+                          className="text-[10px] text-[#B8860B] dark:text-[#E6C65B] underline hover:opacity-80 cursor-pointer shrink-0"
+                          title="Restablecer precio calculado automáticamente"
+                        >
+                          Restablecer
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 

@@ -118,7 +118,7 @@ export default function AdminServicesPage() {
     if (activeTab === "servicios") {
       setEditingService({
         nombre: "",
-        categoria: "Manicura",
+        categoria: "",
         precio: 15000,
         duracion: 90,
         mantenimientoDias: 21,
@@ -668,19 +668,19 @@ export default function AdminServicesPage() {
                     <input
                       type="text"
                       list="categories-list"
-                      value={editingService.categoria || "Manicura"}
+                      value={editingService.categoria || ""}
                       onChange={(e) =>
                         setEditingService({ ...editingService, categoria: e.target.value })
                       }
-                      placeholder="Manicura, Cejas, Pestañas..."
+                      placeholder="Escribe o selecciona una categoría..."
                       className="w-full px-3.5 py-2 rounded-xl border border-[#DCC5A3]/60 text-xs focus:outline-none focus:border-[#D4AF37]"
                     />
                     <datalist id="categories-list">
-                      <option value="Manicura" />
-                      <option value="Cejas" />
-                      <option value="Pestañas" />
-                      <option value="Spa de Manos" />
-                      <option value="Belleza Facial" />
+                      {categories
+                        .filter((cat) => cat !== "Todas")
+                        .map((cat, idx) => (
+                          <option key={idx} value={cat} />
+                        ))}
                     </datalist>
                   </div>
                 </div>
