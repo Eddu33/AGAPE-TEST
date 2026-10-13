@@ -23,8 +23,31 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://agapenails.vercel.app"),
   title: "ÁGAPE STUDIO | Manicuría & Cuidado de Uñas",
   description: "La belleza nace del amor perfecto. Sistema de turnos y estética de uñas.",
+  openGraph: {
+    title: "ÁGAPE STUDIO | Manicuría & Cuidado de Uñas",
+    description: "La belleza nace del amor perfecto. Sistema de turnos y estética de uñas.",
+    url: "https://agapenails.vercel.app",
+    siteName: "ÁGAPE STUDIO",
+    images: [
+      {
+        url: "/logo-agape-og.jpg",
+        width: 1920,
+        height: 1080,
+        alt: "ÁGAPE STUDIO Logo",
+      },
+    ],
+    locale: "es_AR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ÁGAPE STUDIO | Manicuría & Cuidado de Uñas",
+    description: "La belleza nace del amor perfecto. Sistema de turnos y estética de uñas.",
+    images: ["/logo-agape-og.jpg"],
+  },
 };
 
 export default function RootLayout({

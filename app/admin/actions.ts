@@ -15,7 +15,7 @@ import {
 } from "@/lib/db";
 import { BlockedTime, formatDateKey, timeStringToMinutes } from "@/lib/availability";
 import { SERVICIOS_AGAPE, EXTRAS_AGAPE, calculateTotalDuration, calculateTotalPrice } from "@/lib/services";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { randomUUID } from "crypto";
 
 export interface DashboardStats {
@@ -212,9 +212,29 @@ export async function createManualAppointment(data: {
       } as any;
     }
 
-    const extras = EXTRAS_AGAPE.filter((e) => (data.extraIds || []).includes(e.id));
-    const totalDuration = calculateTotalDuration(serviceInfo as any, extras);
-    const calculatedPrice = calculateTotalPrice(serviceInfo as any, extras);
+    // Buscar los extras en Prisma de forma dinámica
+    let extras: Array<{ id: string; nombre: string; precio: number; duracion: number }> = [];
+    if (data.extraIds && data.extraIds.length > 0) {
+      const dbExtras = await prisma.dynamicExtra.findMany({
+        where: { id: { in: data.extraIds } },
+      });
+      extras = data.extraIds.map((id) => {
+        const foundDb = dbExtras.find((e) => e.id === id);
+        if (foundDb) {
+          return {
+            id: foundDb.id,
+            nombre: foundDb.nombre,
+            precio: Number(foundDb.precio),
+            duracion: Number(foundDb.duracion),
+          };
+        }
+        const foundFallback = EXTRAS_AGAPE.find((e) => e.id === id);
+        return foundFallback ? { ...foundFallback } : { id, nombre: "Extra", precio: 0, duracion: 0 };
+      });
+    }
+
+    const totalDuration = calculateTotalDuration(serviceInfo as any, extras as any);
+    const calculatedPrice = calculateTotalPrice(serviceInfo as any, extras as any);
     const finalPrice = data.totalPrice !== undefined ? Number(data.totalPrice) : calculatedPrice;
 
     const startMinutes = timeStringToMinutes(data.startTime);
@@ -400,17 +420,39 @@ export const getStats = getAdminStats;
 // ==========================================
 
 export async function getAdminServices(): Promise<DynamicService[]> {
+  noStore();
   try {
-    const services = await prisma.dynamicService.findMany();
-    if (services.length > 0) {
-      return services.map(s => ({
-        ...s,
-        imagenUrl: s.imagenUrl || "",
-        garantia: s.garantia || "",
-        instrucciones: s.instrucciones || "",
-      }));
+    let services = await prisma.dynamicService.findMany();
+    
+    if (services.length === 0) {
+      // Seed database with initial services
+      await prisma.dynamicService.createMany({
+        data: INITIAL_SERVICES.map(s => ({
+          id: s.id,
+          nombre: s.nombre,
+          categoria: s.categoria,
+          precio: s.precio,
+          duracion: s.duracion,
+          mantenimientoDias: s.mantenimientoDias,
+          descripcion: s.descripcion,
+          imagenUrl: s.imagenUrl,
+          queIncluye: s.queIncluye,
+          queNoIncluye: s.queNoIncluye,
+          garantia: s.garantia,
+          instrucciones: s.instrucciones,
+          activo: s.activo,
+          destacado: s.destacado,
+        }))
+      });
+      services = await prisma.dynamicService.findMany();
     }
-    return INITIAL_SERVICES;
+    
+    return services.map(s => ({
+      ...s,
+      imagenUrl: s.imagenUrl || "",
+      garantia: s.garantia || "",
+      instrucciones: s.instrucciones || "",
+    }));
   } catch (error) {
     console.error("Error al obtener servicios de administración:", error);
     return INITIAL_SERVICES;
@@ -483,6 +525,7 @@ export async function saveAdminService(data: Partial<DynamicService>): Promise<{
       });
     }
 
+    revalidatePath("/admin/dashboard");
     revalidatePath("/admin/services");
     revalidatePath("/servicios");
     revalidatePath("/book");
@@ -497,6 +540,7 @@ export async function saveAdminService(data: Partial<DynamicService>): Promise<{
 export async function deleteAdminService(id: string): Promise<{ success: boolean; error?: string }> {
   try {
     await prisma.dynamicService.delete({ where: { id } });
+    revalidatePath("/admin/dashboard");
     revalidatePath("/admin/services");
     revalidatePath("/servicios");
     revalidatePath("/book");
@@ -515,8 +559,11 @@ export async function toggleServiceStatus(id: string): Promise<{ success: boolea
         where: { id },
         data: { activo: !service.activo },
       });
+      revalidatePath("/admin/dashboard");
       revalidatePath("/admin/services");
       revalidatePath("/servicios");
+      revalidatePath("/book");
+      revalidatePath("/");
       return { success: true };
     }
     return { success: false, error: "Servicio no encontrado" };
@@ -1045,6 +1092,115 @@ export async function saveAdminTemplate(id: string, texto: string) {
     });
     revalidatePath("/admin/messages");
     return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+
+export async function getAdminExtras() {
+  noStore();
+  try {
+    let extras = await prisma.dynamicExtra.findMany();
+    
+    if (extras.length === 0) {
+      await prisma.dynamicExtra.createMany({
+        data: EXTRAS_AGAPE.map(e => ({
+          id: e.id,
+          nombre: e.nombre,
+          precio: e.precio,
+          duracion: e.duracion,
+          descripcion: e.descripcion,
+          activo: e.activo
+        }))
+      });
+      extras = await prisma.dynamicExtra.findMany();
+    }
+    
+    return extras;
+  } catch (error) {
+    return EXTRAS_AGAPE;
+  }
+}
+
+export async function saveAdminExtra(data: any) {
+  try {
+    if (data.id && data.id.length > 5) { // UUID
+      const exists = await prisma.dynamicExtra.findUnique({ where: { id: data.id } });
+      if (exists) {
+        await prisma.dynamicExtra.update({
+          where: { id: data.id },
+          data: {
+            nombre: data.nombre,
+            precio: Number(data.precio),
+            duracion: Number(data.duracion),
+            descripcion: data.descripcion,
+            activo: data.activo
+          }
+        });
+      } else {
+        await prisma.dynamicExtra.create({
+          data: {
+            id: data.id,
+            nombre: data.nombre,
+            precio: Number(data.precio),
+            duracion: Number(data.duracion),
+            descripcion: data.descripcion,
+            activo: data.activo !== undefined ? data.activo : true
+          }
+        });
+      }
+    } else {
+      await prisma.dynamicExtra.create({
+        data: {
+          id: randomUUID(),
+          nombre: data.nombre,
+          precio: Number(data.precio),
+          duracion: Number(data.duracion),
+          descripcion: data.descripcion,
+          activo: data.activo !== undefined ? data.activo : true
+        }
+      });
+    }
+    revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/services");
+    revalidatePath("/servicios");
+    revalidatePath("/book");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteAdminExtra(id: string) {
+  try {
+    await prisma.dynamicExtra.delete({ where: { id } });
+    revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/services");
+    revalidatePath("/servicios");
+    revalidatePath("/book");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function toggleExtraStatus(id: string) {
+  try {
+    const extra = await prisma.dynamicExtra.findUnique({ where: { id } });
+    if (extra) {
+      await prisma.dynamicExtra.update({
+        where: { id },
+        data: { activo: !extra.activo }
+      });
+      revalidatePath("/admin/dashboard");
+      revalidatePath("/admin/services");
+      revalidatePath("/servicios");
+      revalidatePath("/book");
+      revalidatePath("/");
+      return { success: true };
+    }
+    return { success: false };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

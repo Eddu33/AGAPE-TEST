@@ -14,7 +14,7 @@ import {
   formatPrice,
   formatDuration,
 } from "@/lib/services";
-import { getPublicServices } from "../actions";
+import { getPublicServices, getPublicExtras } from "../actions";
 import {
   Clock,
   Calendar,
@@ -31,18 +31,26 @@ export default function ServiciosPage() {
   const [services, setServices] = useState<Service[]>(SERVICIOS_AGAPE);
   const [selectedService, setSelectedService] = useState<Service>(SERVICIOS_AGAPE[0]);
   const [selectedExtraIds, setSelectedExtraIds] = useState<string[]>([]);
+  const [extras, setExtras] = useState<Extra[]>(EXTRAS_AGAPE);
 
   useEffect(() => {
     getPublicServices().then((list) => {
-      if (list && list.length > 0) {
+      if (list) {
         setServices(list as Service[]);
-        setSelectedService(list[0] as Service);
+        if (list.length > 0) {
+          setSelectedService(list[0] as Service);
+        }
+      }
+    });
+    getPublicExtras().then((list) => {
+      if (list) {
+        setExtras(list as Extra[]);
       }
     });
   }, []);
 
   // Extras actualmente seleccionados
-  const selectedExtras = EXTRAS_AGAPE.filter((extra) =>
+  const selectedExtras = extras.filter((extra) =>
     selectedExtraIds.includes(extra.id)
   );
 
@@ -265,7 +273,7 @@ export default function ServiciosPage() {
               </p>
 
               <div className="space-y-3">
-                {EXTRAS_AGAPE.map((extra) => {
+                {extras.map((extra) => {
                   const isChecked = selectedExtraIds.includes(extra.id);
                   return (
                     <div

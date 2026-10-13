@@ -99,6 +99,15 @@ export interface MessageTemplate {
 }
 
 
+export interface DynamicExtra {
+  id: string;
+  nombre: string;
+  precio: number;
+  duracion: number;
+  descripcion: string;
+  activo: boolean;
+}
+
 export interface DynamicService {
   id: string;
   nombre: string;
@@ -129,12 +138,56 @@ export interface AppDatabase {
   specialOpenings: SpecialOpening[];
   weeklySchedule: DaySchedule[];
   services?: DynamicService[];
+  extras?: DynamicExtra[];
   expenses?: Expense[];
   promotions?: Promotion[];
   vouchers?: Voucher[];
   templates?: MessageTemplate[];
   settings?: StudioSettings;
 }
+
+export const INITIAL_EXTRAS: DynamicExtra[] = [
+  {
+    id: "nail-art-simple",
+    nombre: "Nail Art Simple (2 a 4 u�as)",
+    precio: 2000,
+    duracion: 15,
+    descripcion: "L�neas finas, puntitos, stickers, degrad� suave, foil o francesa cl�sica en u�as seleccionadas.",
+    activo: true,
+  },
+  {
+    id: "nail-art-completo",
+    nombre: "Nail Art Complejo / Mano Alzada",
+    precio: 4500,
+    duracion: 30,
+    descripcion: "Dise�o detallado a mano alzada en todas las u�as, efecto m�rmol, flores o cromo met�lico.",
+    activo: true,
+  },
+  {
+    id: "remocion-externa",
+    nombre: "Remoci�n de Trabajo Previo",
+    precio: 3000,
+    duracion: 30,
+    descripcion: "Retiro seguro con torno y removedor de gel o semipermanente realizado en otro estudio.",
+    activo: true,
+  },
+  {
+    id: "reparacion-una",
+    nombre: "Reparaci�n de U�a Rota",
+    precio: 1500,
+    duracion: 15,
+    descripcion: "Reconstrucci�n con fibra de vidrio o gel nivelador para emparejar una u�a fisurada.",
+    activo: true,
+  },
+  {
+    id: "cristales",
+    nombre: "Cristaler�a & Strass",
+    precio: 2500,
+    duracion: 15,
+    descripcion: "Aplique de cristales con gel de alta fijaci�n para un toque de luz sofisticado.",
+    activo: true,
+  },
+];
 
 export const INITIAL_SERVICES: DynamicService[] = [
   {
@@ -371,6 +424,7 @@ function ensureDatabaseExists(): void {
       blockedTimes: [],
       specialOpenings: [],
       weeklySchedule: DEFAULT_WEEKLY_SCHEDULE,
+      extras: INITIAL_EXTRAS,
       services: INITIAL_SERVICES,
       expenses: [],
       promotions: [],
@@ -390,6 +444,7 @@ function ensureDatabaseExists(): void {
           blockedTimes: parsedSeed.blockedTimes || [],
           specialOpenings: parsedSeed.specialOpenings || [],
           weeklySchedule: parsedSeed.weeklySchedule || DEFAULT_WEEKLY_SCHEDULE,
+          extras: parsedSeed.extras && parsedSeed.extras.length > 0 ? parsedSeed.extras : INITIAL_EXTRAS,
           services: parsedSeed.services && parsedSeed.services.length > 0 ? parsedSeed.services : INITIAL_SERVICES,
           expenses: parsedSeed.expenses || [],
           promotions: parsedSeed.promotions || [],
@@ -425,6 +480,7 @@ export const getDatabase = (): AppDatabase => {
         blockedTimes: parsed.blockedTimes || [],
         specialOpenings: parsed.specialOpenings || [],
         weeklySchedule: parsed.weeklySchedule || DEFAULT_WEEKLY_SCHEDULE,
+        extras: parsed.extras && parsed.extras.length > 0 ? parsed.extras : INITIAL_EXTRAS,
         services: parsed.services && parsed.services.length > 0 ? parsed.services : INITIAL_SERVICES,
         expenses: parsed.expenses || [],
         promotions: parsed.promotions || [],
@@ -445,6 +501,7 @@ export const getDatabase = (): AppDatabase => {
       blockedTimes: [],
       specialOpenings: [],
       weeklySchedule: DEFAULT_WEEKLY_SCHEDULE,
+      extras: INITIAL_EXTRAS,
       services: INITIAL_SERVICES,
       expenses: [],
       promotions: [],
@@ -469,7 +526,8 @@ export async function getDatabaseAsync(): Promise<AppDatabase> {
           blockedTimes: parsed.blockedTimes || [],
           specialOpenings: parsed.specialOpenings || [],
           weeklySchedule: parsed.weeklySchedule || DEFAULT_WEEKLY_SCHEDULE,
-          services: parsed.services && parsed.services.length > 0 ? parsed.services : INITIAL_SERVICES,
+          extras: parsed.extras && parsed.extras.length > 0 ? parsed.extras : INITIAL_EXTRAS,
+        services: parsed.services && parsed.services.length > 0 ? parsed.services : INITIAL_SERVICES,
           expenses: parsed.expenses || [],
           promotions: parsed.promotions || [],
           vouchers: parsed.vouchers || [],
@@ -556,4 +614,6 @@ export async function saveDatabaseAsync(data: AppDatabase): Promise<void> {
     }
   }
 }
+
+
 

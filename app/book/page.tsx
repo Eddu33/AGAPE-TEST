@@ -16,7 +16,7 @@ import {
   formatDuration,
 } from "@/lib/services";
 import { SlotAvailability, formatDateKey, timeStringToMinutes } from "@/lib/availability";
-import { getCalculatedAvailability, bookAgapeAppointment, getPublicServices, getStudioSettings } from "../actions";
+import { getCalculatedAvailability, bookAgapeAppointment, getPublicServices, getStudioSettings, getPublicExtras } from "../actions";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -44,6 +44,7 @@ function BookContent() {
     : [];
 
   const [servicesList, setServicesList] = useState<Service[]>(SERVICIOS_AGAPE);
+  const [extrasList, setExtrasList] = useState<Extra[]>(EXTRAS_AGAPE);
   const [selectedService, setSelectedService] = useState<Service>(() => {
     return (
       SERVICIOS_AGAPE.find((s) => s.id === initialServiceId) ||
@@ -54,13 +55,20 @@ function BookContent() {
 
   useEffect(() => {
     getPublicServices().then((list) => {
-      if (list && list.length > 0) {
+      if (list) {
         setServicesList(list as Service[]);
         const paramId = searchParams.get("service");
         const found = list.find((s) => s.id === paramId);
         if (found) {
           setSelectedService(found as Service);
+        } else if (list.length > 0) {
+          setSelectedService(list[0] as Service);
         }
+      }
+    });
+    getPublicExtras().then((list) => {
+      if (list) {
+        setExtrasList(list as Extra[]);
       }
     });
   }, [searchParams]);
@@ -103,7 +111,7 @@ function BookContent() {
   }, []);
 
   // Extras seleccionados
-  const selectedExtras = EXTRAS_AGAPE.filter((e) =>
+  const selectedExtras = extrasList.filter((e) =>
     selectedExtraIds.includes(e.id)
   );
   const totalDuration = calculateTotalDuration(selectedService, selectedExtras);
@@ -197,7 +205,7 @@ function BookContent() {
               clientName: name.trim(),
               clientPhone: phone.trim(),
               serviceName: selectedService.nombre,
-              extraNames: EXTRAS_AGAPE.filter((e) => selectedExtraIds.includes(e.id)).map((e) => e.nombre),
+              extraNames: extrasList.filter((e) => selectedExtraIds.includes(e.id)).map((e) => e.nombre),
               date: dateKey,
               startTime: selectedSlot.time,
               endTime: `${endH}:${endM}`,
@@ -307,43 +315,64 @@ function BookContent() {
               })}
             </div>
 
-            {/* Extras opcionales */}
-            <div className="border-t border-[#E2DBD0] dark:border-[#262626] pt-4">
-              <div className="text-xs font-semibold uppercase tracking-wider text-[#B38E22] dark:text-[#D4AF37] mb-3">
-                Extras y Diseños (opcional)
+            {/* Extras opcionales (Diseño estilo Paso 2) */}
+            <div className="mt-8 pt-8 border-t border-[#E2DBD0] dark:border-[#262626]">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#B38E22] dark:text-[#D4AF37]">
+                  Paso 2 • Personaliza con Extras
+                </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {EXTRAS_AGAPE.map((extra) => {
+              <h2 className="font-cinzel text-xl sm:text-2xl font-bold text-[#171717] dark:text-[#FFFFFF] mb-2">
+                Diseños & Servicios Adicionales
+              </h2>
+              <p className="text-xs sm:text-sm text-[#737373] dark:text-[#A3A3A3] font-light mb-5">
+                Los extras agregan tiempo y valor a tu sesión. Selecciónalos para que la agenda reserve el bloque horario exacto y evite demoras.
+              </p>
+              
+              <div className="flex flex-col gap-3">
+                {extrasList.map((extra) => {
                   const isChecked = selectedExtraIds.includes(extra.id);
                   return (
                     <div
                       key={extra.id}
                       onClick={() => toggleExtra(extra.id)}
-                      className={`p-3 rounded-xl border text-xs flex items-center justify-between cursor-pointer transition-all ${
+                      className={`p-4 sm:p-5 rounded-2xl border flex items-start sm:items-center gap-4 cursor-pointer transition-all duration-200 ${
                         isChecked
-                          ? "bg-[#FFFDF9] dark:bg-[#252119] border-2 border-[#D4AF37] font-medium text-[#171717] dark:text-[#FFFFFF]"
-                          : "bg-[#FAF8F5] dark:bg-[#1A1A1A] border border-[#E2DBD0] dark:border-[#2A2A2A] text-[#555555] dark:text-[#A3A3A3] hover:border-[#D4AF37]/50"
+                          ? "bg-[#FFFDF9] dark:bg-[#1A1814] border-[#D4AF37] ring-1 ring-[#D4AF37]/30"
+                          : "bg-transparent dark:bg-[#121212]/50 border-[#E2DBD0] dark:border-[#2D2D2D] hover:border-[#D4AF37]/50"
                       }`}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="shrink-0 mt-0.5 sm:mt-0">
                         <div
-                          className={`w-4 h-4 rounded flex items-center justify-center border ${
+                          className={`w-5 h-5 rounded-full flex items-center justify-center border ${
                             isChecked
                               ? "bg-[#D4AF37] border-[#D4AF37] text-[#121212]"
-                              : "border-[#CCCCCC] bg-[#FFFFFF] dark:border-[#444444] dark:bg-[#222222]"
+                              : "border-[#A3A3A3] bg-transparent dark:border-[#666666]"
                           }`}
                         >
-                          {isChecked && <Check className="w-3 h-3 text-[#121212]" />}
+                          {isChecked && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
                         </div>
-                        <span className={isChecked ? "text-[#171717] dark:text-white font-semibold" : "text-[#555555] dark:text-[#D1D1D1]"}>{extra.nombre}</span>
                       </div>
-                      <div className="text-right shrink-0">
-                        <span className="font-semibold text-[#B38E22] dark:text-[#D4AF37]">
-                          +{formatPrice(extra.precio)}
-                        </span>
-                        <span className="text-[10px] text-[#737373] dark:text-[#888888] block">
-                          +{extra.duracion}m
-                        </span>
+                      
+                      <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+                        <div>
+                          <span className={`block text-sm font-bold ${isChecked ? "text-[#171717] dark:text-white" : "text-[#171717] dark:text-[#E0E0E0]"}`}>
+                            {extra.nombre}
+                          </span>
+                          <span className="block text-xs text-[#737373] dark:text-[#888888] mt-1 leading-relaxed">
+                            {extra.descripcion}
+                          </span>
+                        </div>
+                        
+                        <div className="text-left sm:text-right shrink-0 flex flex-row sm:flex-col items-center sm:items-end gap-3 sm:gap-0.5 mt-2 sm:mt-0">
+                          <span className="font-bold text-sm text-[#B38E22] dark:text-[#D4AF37]">
+                            +{formatPrice(extra.precio)}
+                          </span>
+                          <span className="flex items-center gap-1 text-[11px] font-medium text-[#737373] dark:text-[#A3A3A3]">
+                            <Clock className="w-3 h-3 text-[#B38E22] dark:text-[#D4AF37]" />
+                            +{extra.duracion} min
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );
@@ -352,11 +381,11 @@ function BookContent() {
             </div>
           </div>
 
-          {/* PASO 2: CALENDARIO Y HORARIOS DISPONIBLES */}
+          {/* PASO 3: CALENDARIO Y HORARIOS DISPONIBLES */}
           <div className="p-6 sm:p-8 rounded-3xl bg-[#FFFFFF] dark:bg-[#161616]/85 border border-[#E2DBD0] dark:border-[#2D2D2D] backdrop-blur-md shadow-xl text-[#171717] dark:text-white transition-colors duration-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-7 h-7 rounded-full bg-[#D4AF37] text-[#121212] text-xs font-bold flex items-center justify-center">
-                2
+                3
               </div>
               <div>
                 <h2 className="font-cinzel text-lg sm:text-xl font-bold text-[#171717] dark:text-[#FFFFFF]">

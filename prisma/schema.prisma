@@ -159,3 +159,13 @@ model GalleryImage {
   name      String?
   createdAt DateTime @default(now())
 }
+
+model DynamicExtra {
+  id          String   @id @default(uuid())
+  nombre      String
+  precio      Float
+  duracion    Int
+  descripcion String
+  activo      Boolean  @default(true)
+}
+
